@@ -121,16 +121,10 @@ function executeBroadcast() {
   const baseState = engine.getBroadcastState();
   const baseJson = JSON.stringify({ type: 'STATE_UPDATE', state: baseState });
 
-  for (const [ws, meta] of clients.entries()) {
+  // Single-pass O(1) serialization broadcast for massive concurrency (1,000+ players)
+  for (const [ws] of clients.entries()) {
     if (ws.readyState === WebSocket.OPEN) {
-      if (meta.playerId) {
-        // Player-personalized state (with their score & answer)
-        const playerState = engine.getPlayerState(meta.playerId);
-        ws.send(JSON.stringify({ type: 'STATE_UPDATE', state: playerState }));
-      } else {
-        // Stage / Spectator state
-        ws.send(baseJson);
-      }
+      ws.send(baseJson);
     }
   }
 }
