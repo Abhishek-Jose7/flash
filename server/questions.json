@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "question": "What is Miles Morales' iconic signature venom power?",
+    "options": ["Venom Strike (Bio-Electricity)", "Web Camouflage", "Spider-Sense Negation", "Sonic Shriek"],
+    "correctIndex": 0,
+    "timeLimitSec": 15,
+    "spiderPart": "Thorax & Core Spine"
+  },
+  {
+    "id": 2,
+    "question": "Which dimension is Spider-Gwen (Gwen Stacy) from?",
+    "options": ["Earth-616", "Earth-65", "Earth-1610", "Earth-8311"],
+    "correctIndex": 1,
+    "timeLimitSec": 15,
+    "spiderPart": "Inner Web Matrix"
+  },
+  {
+    "id": 3,
+    "question": "What famous motto did Uncle Ben impart to Peter Parker?",
+    "options": ["With great power comes great responsibility", "No good deed goes unpunished", "I am Spider-Man", "Anyone can wear the mask"],
+    "correctIndex": 0,
+    "timeLimitSec": 15,
+    "spiderPart": "Upper Left & Right Knees"
+  },
+  {
+    "id": 4,
+    "question": "Who created the Spider-Society in 'Across the Spider-Verse'?",
+    "options": ["Peter B. Parker", "Spider-Punk (Hobie Brown)", "Miguel O'Hara (Spider-Man 2099)", "Pavitr Prabhakar"],
+    "correctIndex": 2,
+    "timeLimitSec": 15,
+    "spiderPart": "Upper Web Arches"
+  },
+  {
+    "id": 5,
+    "question": "What musical instrument does Spider-Gwen play in her band?",
+    "options": ["Lead Guitar", "Drums", "Bass", "Keyboards"],
+    "correctIndex": 1,
+    "timeLimitSec": 15,
+    "spiderPart": "Upper Claws Fully Deployed"
+  },
+  {
+    "id": 6,
+    "question": "What is the primary power of the supervillain 'The Spot'?",
+    "options": ["Gravity Manipulation", "Interdimensional Dark-Matter Portals", "Electric Shockwaves", "Shape Shifting"],
+    "correctIndex": 1,
+    "timeLimitSec": 15,
+    "spiderPart": "Lower Joint Shockwave"
+  },
+  {
+    "id": 7,
+    "question": "What phrase completes: 'It's a leap of...'?",
+    "options": ["Courage", "Destiny", "Faith", "Action"],
+    "correctIndex": 2,
+    "timeLimitSec": 15,
+    "spiderPart": "Venom Shafts Primed"
+  },
+  {
+    "id": 8,
+    "question": "What gives EVERY Spider-Person their destiny across the Multiverse?",
+    "options": ["The Web of Life & Destiny", "The Infinity Stones", "Oscorp Super-Soldier Serum", "Cosmic Radiation"],
+    "correctIndex": 0,
+    "timeLimitSec": 15,
+    "spiderPart": "AMAZING SPIDER-MAN 100% COMPLETE"
+  }
+]

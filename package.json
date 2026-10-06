@@ -1,0 +1,17 @@
+{
+  "name": "spiderverse-flashmob",
+  "version": "1.0.0",
+  "description": "High-concurrency Spider-Verse interactive live event platform for flashmobs",
+  "main": "server/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test tests/stateEngine.test.js",
+    "test:load": "node tests/loadTest.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spider-Verse Flashmob | Host Admin</title>
+  <link rel="stylesheet" href="/css/spiderverse.css">
+  <style>
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .admin-btn {
+      background: #1f1b2e;
+      border: 2px solid #554477;
+      color: #fff;
+      font-family: var(--font-tech);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .admin-btn:hover {
+      background: #2b2540;
+      border-color: #00f0ff;
+    }
+    .admin-btn.danger {
+      border-color: #ff003b;
+      color: #ff003b;
+    }
+    .admin-btn.danger:hover {
+      background: #ff003b;
+      color: #fff;
+    }
+    .admin-btn.primary {
+      background: linear-gradient(135deg, #00f0ff, #0099cc);
+      color: #000;
+      border: none;
+    }
+    .stat-badge {
+      font-family: var(--font-comic);
+      font-size: 18px;
+      color: #ffd700;
+    }
+  </style>
+</head>
+<body style="padding: 20px;">
+  <div class="halftone-bg"></div>
+  <div class="vignette-overlay"></div>
+
+  <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 10;">
+    <header class="status-bar" style="margin-bottom: 20px;">
+      <h1 class="chromatic-text" style="font-size: 22px;">FLASHMOB HOST CONTROLLER</h1>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 12px; color: #aaa;">AUTH PASSKEY:</span>
+        <input id="admin-passkey" type="password" value="spiderverse"
+               style="background: #000; border: 1px solid #444; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 13px;">
+        <span id="admin-conn-status" style="font-size: 12px; font-weight: 700; color: #00ff66;">ONLINE</span>
+      </div>
+    </header>
+
+    <!-- LIVE STATE OVERVIEW -->
+    <div class="comic-panel highlight" style="margin-bottom: 20px;">
+      <h2 style="font-size: 16px; color: #ffcc00; text-transform: uppercase; margin-bottom: 12px;">Live Status Dashboard</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; margin-bottom: 16px;">
+        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
+          <div style="font-size: 11px; color: #aaa;">CURRENT STAGE</div>
+          <div id="admin-stage-display" class="stat-badge" style="color: #00f0ff;">LOBBY</div>
+        </div>
+        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
+          <div style="font-size: 11px; color: #aaa;">QUESTION INDEX</div>
+          <div id="admin-q-index" class="stat-badge">1 / 8</div>
+        </div>
+        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
+          <div style="font-size: 11px; color: #aaa;">ONLINE SLINGERS</div>
+          <div id="admin-players-count" class="stat-badge" style="color: #00ff66;">0</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #aaa;">ACTIVE QUESTION: </span>
+        <strong id="admin-cur-q-text" style="color: #fff;">-</strong>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div style="border-left: 3px solid var(--miles-red); padding-left: 8px;">
+          <div style="font-size: 12px; color: var(--miles-red); font-weight: 700;">TEAM MILES</div>
+          <div id="admin-miles-stats" style="font-size: 13px; color: #ccc;">0 PTS | 0% Spider Built</div>
+        </div>
+        <div style="border-left: 3px solid var(--gwen-pink); padding-left: 8px;">
+          <div style="font-size: 12px; color: var(--gwen-pink); font-weight: 700;">TEAM GWEN</div>
+          <div id="admin-gwen-stats" style="font-size: 13px; color: #ccc;">0 PTS | 0% Spider Built</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN EVENT CONTROLS -->
+    <div class="comic-panel" style="margin-bottom: 20px;">
+      <h2 style="font-size: 16px; color: #ffcc00; text-transform: uppercase; margin-bottom: 12px;">Event Flow Controls</h2>
+      <div class="admin-grid">
+        <button id="btn-start-game" class="admin-btn primary">▶️ START EVENT (COUNTDOWN Q1)</button>
+        <button id="btn-next-q" class="admin-btn" style="border-color: #00ff66; color: #00ff66;">⏩ NEXT QUESTION</button>
+        <button id="btn-reveal-ans" class="admin-btn" style="border-color: #ffd700; color: #ffd700;">📢 FORCE REVEAL ANSWER</button>
+        <button id="btn-trigger-win" class="admin-btn" style="border-color: #ff007f; color: #ff007f;">🏆 TRIGGER VICTORY SCREEN</button>
+        <button id="btn-reset-game" class="admin-btn danger" style="grid-column: span 2;">🔄 RESET ENTIRE GAME (NEW ROUND)</button>
+      </div>
+    </div>
+
+    <!-- REHEARSAL / QUICK NODE UNLOCK TESTING -->
+    <div class="comic-panel">
+      <h2 style="font-size: 16px; color: #ffcc00; text-transform: uppercase; margin-bottom: 8px;">Rehearsal & Node Unlock Testing</h2>
+      <p style="font-size: 13px; color: #aaa; margin-bottom: 12px;">
+        Simulate tiers unlocking on stage canvases to test visual alignment before the crowd arrives:
+      </p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <h3 style="font-size: 13px; color: var(--miles-red); margin-bottom: 6px;">Unlock Team Miles Tier:</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="1" style="padding: 6px 12px;">T1</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="2" style="padding: 6px 12px;">T2</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="3" style="padding: 6px 12px;">T3</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="4" style="padding: 6px 12px;">T4</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="5" style="padding: 6px 12px;">T5</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="6" style="padding: 6px 12px;">T6</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="7" style="padding: 6px 12px;">T7</button>
+            <button class="admin-btn btn-test-tier" data-team="miles" data-tier="8" style="padding: 6px 12px;">T8 (100%)</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-size: 13px; color: var(--gwen-pink); margin-bottom: 6px;">Unlock Team Gwen Tier:</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="1" style="padding: 6px 12px;">T1</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="2" style="padding: 6px 12px;">T2</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="3" style="padding: 6px 12px;">T3</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="4" style="padding: 6px 12px;">T4</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="5" style="padding: 6px 12px;">T5</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="6" style="padding: 6px 12px;">T6</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="7" style="padding: 6px 12px;">T7</button>
+            <button class="admin-btn btn-test-tier" data-team="gwen" data-tier="8" style="padding: 6px 12px;">T8 (100%)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/adminApp.js"></script>
+</body>
+</html>
