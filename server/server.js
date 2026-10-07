@@ -8,31 +8,30 @@ import { GameStateEngine } from './gameState.js';
 import { RateLimiter } from './rateLimiter.js';
 import { SPIDER_NODES, SPIDER_EDGES } from './spiderGraphData.js';
 
-// --- PROCESS-LEVEL CRASH GUARDS ---
-// Without these, a single unhandled throw (e.g. ws.send on a closing socket)
-// kills the entire Node process mid-event with 300 people connected.
-process.on('uncaughtException', (err) => {
-  console.error('[FATAL GUARD] Uncaught exception caught — server stays alive:', err.message);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('[FATAL GUARD] Unhandled rejection caught — server stays alive:', reason);
-});
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSKEY = process.env.ADMIN_KEY || 'spiderverse';
+const ADMIN_PASSKEY = process.env.ADMIN_KEY || (process.env.NODE_ENV === 'production' ? '' : 'spiderverse');
+if (!ADMIN_PASSKEY) {
+  throw new Error('ADMIN_KEY must be set in production.');
+}
+if (process.env.NODE_ENV === 'production' && ADMIN_PASSKEY.length < 32) {
+  throw new Error('ADMIN_KEY must be at least 32 characters in production.');
+}
+const MAX_CONNECTIONS = Number.parseInt(process.env.MAX_CONNECTIONS || '1000', 10);
+const MAX_BUFFERED_BYTES = 256 * 1024;
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, maxPayload: 2048 });
+const wss = new WebSocketServer({ server, maxPayload: 2048, perMessageDeflate: false });
 
 const engine = new GameStateEngine();
 // High burst tokens (600) to support 200-500 phones scanning QR simultaneously from the same venue Wi-Fi / NAT
 const connectionLimiter = new RateLimiter({ maxTokens: 800, refillRate: 200, maxPayloadBytes: 2048 });
 const messageLimiter = new RateLimiter({ maxTokens: 25, refillRate: 10, maxPayloadBytes: 2048 });
+const adminLoginLimiter = new RateLimiter({ maxTokens: 10, refillRate: 10 / 60, maxPayloadBytes: 8192 });
 
 // Connection tracking: ws -> { playerId, ip, isAlive, lastActive, role }
 const clients = new Map();
@@ -45,6 +44,12 @@ const clients = new Map();
 function safeSend(ws, data) {
   try {
     if (ws.readyState === WebSocket.OPEN) {
+      // State updates are replaceable; disconnect a client that cannot drain its
+      // queue so a slow mobile connection cannot retain unbounded server memory.
+      if (ws.bufferedAmount > MAX_BUFFERED_BYTES) {
+        ws.close(1013, 'SLOW_CONSUMER');
+        return;
+      }
       ws.send(data);
     }
   } catch (e) {
@@ -55,7 +60,7 @@ function safeSend(ws, data) {
 
 // Enable proxy trusting for Caddy, AWS ELB, and Cloudflare reverse proxies
 app.set('trust proxy', 1);
-app.use(express.json());
+app.use(express.json({ limit: '8kb' }));
 
 // --- HTTP Middleware & Static File Streaming ---
 app.use((req, res, next) => {
@@ -127,8 +132,11 @@ app.get('/api/qr', async (req, res) => {
 
 // Admin Authentication API
 app.post('/api/admin/login', (req, res) => {
+  if (!adminLoginLimiter.isAllowed(req.ip || req.socket.remoteAddress || 'unknown')) {
+    return res.status(429).json({ success: false, message: 'Too many login attempts. Try again shortly.' });
+  }
   const { username, password } = req.body || {};
-  if (username === 'admin' && (password === ADMIN_PASSKEY || password === 'spiderverse')) {
+  if (username === 'admin' && password === ADMIN_PASSKEY) {
     return res.json({ success: true, token: ADMIN_PASSKEY });
   }
   return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
@@ -221,6 +229,9 @@ function startTicker() {
       requestBroadcast();
     }
   }, 1000);
+  // The HTTP listener keeps a running server alive; do not keep a closed test
+  // server process alive solely because its game ticker is still scheduled.
+  timerInterval.unref();
 }
 startTicker();
 
@@ -228,7 +239,7 @@ startTicker();
 wss.on('connection', (ws, req) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
 
-  if (!connectionLimiter.isAllowed(ip)) {
+  if (clients.size >= MAX_CONNECTIONS || !connectionLimiter.isAllowed(ip)) {
     ws.close(1008, 'RATE_LIMIT_EXCEEDED');
     return;
   }
@@ -321,13 +332,21 @@ wss.on('connection', (ws, req) => {
         }
 
         case 'ADMIN_ACTION': {
-          if (msg.passkey !== ADMIN_PASSKEY && msg.passkey !== 'spiderverse') {
+          if (msg.passkey !== ADMIN_PASSKEY) {
             safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'UNAUTHORIZED' }));
             return;
           }
 
           // Mark this client as admin role if it wasn't detected from URL
+          const wasAdmin = clientMeta.role === 'admin';
           clientMeta.role = 'admin';
+          if (!wasAdmin) {
+            safeSend(ws, JSON.stringify({
+              type: 'INIT',
+              graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
+              state: engine.getStageBroadcast()
+            }));
+          }
           handleAdminAction(msg.action, msg.payload, ws);
           break;
         }

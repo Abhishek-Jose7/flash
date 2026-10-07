@@ -4,3 +4,5 @@ npm-debug.log
 .gitignore
 .env*
 tests
+public/img/*.png
+public/img/*.gif

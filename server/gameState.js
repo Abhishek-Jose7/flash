@@ -1,4 +1,3 @@
-import { SPIDER_NODES, SPIDER_EDGES, UNLOCK_TIERS, TOTAL_NODES, TOTAL_EDGES } from './spiderGraphData.js';
 import questionsData from './questions.json' with { type: 'json' };
 
 export class GameStateEngine {
@@ -13,7 +12,7 @@ export class GameStateEngine {
     this.questionStartTime = 0;
     this.questionDurationSec = 15;
     this.revealStartTime = 0;
-    this.revealDurationSec = 4;
+    this.revealDurationSec = 2;
     this.countdownSeconds = 3;
     this.winnerTeam = null;
 
@@ -27,9 +26,8 @@ export class GameStateEngine {
         secondaryColor: '#F4F6F8',
         bgDark: '#10141B',
         score: 0,
+        correctCount: 0,
         unlockedTiers: new Set(),
-        unlockedNodes: new Set(),
-        unlockedEdges: [],
         playerCount: 0
       },
       build: {
@@ -40,9 +38,8 @@ export class GameStateEngine {
         secondaryColor: '#F4F6F8',
         bgDark: '#10141B',
         score: 0,
+        correctCount: 0,
         unlockedTiers: new Set(),
-        unlockedNodes: new Set(),
-        unlockedEdges: [],
         playerCount: 0
       }
     };
@@ -99,6 +96,7 @@ export class GameStateEngine {
         score: 0,
         correctCount: 0,
         totalAnswered: 0,
+        totalResponseTimeMs: 0,
         joinedAt: Date.now()
       };
 
@@ -187,6 +185,7 @@ export class GameStateEngine {
 
     // Atomic updates to player
     player.totalAnswered++;
+    player.totalResponseTimeMs += timeElapsedMs;
     if (isCorrect) {
       player.correctCount++;
       player.score += points;
@@ -194,6 +193,7 @@ export class GameStateEngine {
       // Atomic updates to team
       const team = this.teams[player.teamId];
       team.score += points;
+      team.correctCount++;
 
       // Unlock tier for team
       this.unlockTeamTier(player.teamId, currentQ.id);
@@ -205,6 +205,7 @@ export class GameStateEngine {
       success: true,
       isCorrect,
       points,
+      timeElapsedMs,
       playerScore: player.score,
       teamId: player.teamId
     };
@@ -212,25 +213,12 @@ export class GameStateEngine {
 
   unlockTeamTier(teamId, tierIndex) {
     const team = this.teams[teamId];
-    if (!team) return;
+    if (!team || !Number.isInteger(tierIndex) || tierIndex < 1 || tierIndex > this.questions.length) return;
 
-    const tierData = UNLOCK_TIERS.find(t => t.tier === tierIndex);
-    if (!tierData || team.unlockedTiers.has(tierIndex)) return;
-
+    if (team.unlockedTiers.has(tierIndex)) return;
     team.unlockedTiers.add(tierIndex);
 
-    tierData.nodes.forEach(nId => team.unlockedNodes.add(nId));
-
-    tierData.edges.forEach(edge => {
-      const exists = team.unlockedEdges.some(
-        e => (e[0] === edge[0] && e[1] === edge[1]) || (e[0] === edge[1] && e[1] === edge[0])
-      );
-      if (!exists) {
-        team.unlockedEdges.push(edge);
-      }
-    });
-
-    if (team.unlockedTiers.size === UNLOCK_TIERS.length && !this.winnerTeam) {
+    if (team.unlockedTiers.size >= this.questions.length && !this.winnerTeam) {
       this.winnerTeam = teamId;
       this.stage = 'VICTORY';
     }
@@ -284,14 +272,15 @@ export class GameStateEngine {
           nickname: p.nickname,
           score: p.score,
           correctCount: p.correctCount,
-          totalAnswered: p.totalAnswered
+          totalAnswered: p.totalAnswered,
+          totalResponseTimeMs: p.totalResponseTimeMs
         });
       }
     }
 
     teamPlayers.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return b.correctCount - a.correctCount;
+      if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
+      return a.totalResponseTimeMs - b.totalResponseTimeMs;
     });
 
     return teamPlayers.slice(0, limit);
@@ -344,17 +333,17 @@ export class GameStateEngine {
         id: 'bit',
         name: this.teams.bit.name,
         hero: this.teams.bit.hero,
-        score: this.teams.bit.score,
+        score: this.teams.bit.correctCount,
         playerCount: this.teams.bit.playerCount,
-        percent: Math.round((this.teams.bit.unlockedNodes.size / TOTAL_NODES) * 100)
+        percent: Math.min(100, Math.round((this.teams.bit.unlockedTiers.size / this.questions.length) * 100))
       },
       build: {
         id: 'build',
         name: this.teams.build.name,
         hero: this.teams.build.hero,
-        score: this.teams.build.score,
+        score: this.teams.build.correctCount,
         playerCount: this.teams.build.playerCount,
-        percent: Math.round((this.teams.build.unlockedNodes.size / TOTAL_NODES) * 100)
+        percent: Math.min(100, Math.round((this.teams.build.unlockedTiers.size / this.questions.length) * 100))
       }
     };
   }
@@ -363,14 +352,7 @@ export class GameStateEngine {
    * Full team data with unlocked node/edge arrays — only for the host console.
    */
   _getFullTeams() {
-    const slim = this._getSlimTeams();
-    slim.bit.unlockedTiersCount = this.teams.bit.unlockedTiers.size;
-    slim.bit.unlockedNodeIds = Array.from(this.teams.bit.unlockedNodes);
-    slim.bit.unlockedEdges = this.teams.bit.unlockedEdges;
-    slim.build.unlockedTiersCount = this.teams.build.unlockedTiers.size;
-    slim.build.unlockedNodeIds = Array.from(this.teams.build.unlockedNodes);
-    slim.build.unlockedEdges = this.teams.build.unlockedEdges;
-    return slim;
+    return this._getSlimTeams();
   }
 
   /**
@@ -475,7 +457,8 @@ export class GameStateEngine {
           base.playerAnswer = {
             optionIndex: sub.optionIndex,
             isCorrect: sub.isCorrect,
-            points: sub.points
+            points: sub.points,
+            timeElapsedMs: sub.timeElapsedMs
           };
         }
       }

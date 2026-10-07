@@ -1,4 +1,10 @@
-import { SpiderCanvasRenderer } from './spiderCanvas.js';
+import { SpiderCanvasRenderer } from './spiderCanvas.js?v=tracker11';
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
 
 class PlayerApp {
   constructor() {
@@ -61,8 +67,11 @@ class PlayerApp {
 
       const submitJoin = () => {
         const val = inputNick.value.trim();
-        if (!val) {
-          if (joinError) joinError.style.display = 'block';
+        if (!val || !/^\d+$/.test(val)) {
+          if (joinError) {
+            joinError.textContent = 'Enter a valid roll number.';
+            joinError.style.display = 'block';
+          }
           inputNick.focus();
           return;
         }
@@ -78,7 +87,16 @@ class PlayerApp {
         if (e.key === 'Enter') submitJoin();
       });
       inputNick.addEventListener('input', () => {
-        if (joinError) joinError.style.display = 'none';
+        const val = inputNick.value;
+        if (/[^\d]/.test(val)) {
+          inputNick.value = val.replace(/[^\d]/g, '');
+          if (joinError) {
+            joinError.textContent = 'Enter only numbers.';
+            joinError.style.display = 'block';
+          }
+        } else {
+          if (joinError) joinError.style.display = 'none';
+        }
       });
     }
 
@@ -105,10 +123,10 @@ class PlayerApp {
         connStatus.textContent = '⚡ CONNECTED TO LIVE GAME';
         connStatus.style.color = 'var(--orchid)';
       }
-
-      if (this.nickname) {
-        this.sendJoin();
-      }
+      const topConn = document.getElementById('top-conn-status');
+      if (topConn) { topConn.textContent = '[ONLINE]'; topConn.style.color = '#40c057'; }
+      // Rejoin the same persistent player record after a network drop or refresh.
+      if (this.nickname) this.sendJoin();
     };
 
     this.ws.onmessage = (event) => {
@@ -126,6 +144,8 @@ class PlayerApp {
         connStatus.textContent = '⚠️ RECONNECTING TO LIVE GAME...';
         connStatus.style.color = 'var(--blush)';
       }
+      const topConn = document.getElementById('top-conn-status');
+      if (topConn) { topConn.textContent = '[OFFLINE]'; topConn.style.color = '#fa5252'; }
       setTimeout(() => this.connectWebSocket(), 1500);
     };
 
@@ -147,8 +167,6 @@ class PlayerApp {
   submitAnswer(opt) {
     if (this.hasAnswered || !this.state || this.state.stage !== 'QUESTION_ACTIVE') return;
 
-    if (navigator.vibrate) navigator.vibrate(50);
-
     this.hasAnswered = true;
     this.selectedOption = opt;
 
@@ -156,14 +174,15 @@ class PlayerApp {
     const btns = document.querySelectorAll('.mcq-btn');
     btns.forEach(b => {
       if (parseInt(b.dataset.opt, 10) === opt) {
-        b.classList.add('selected-accepted');
+        b.classList.add('selected-pending');
       } else {
         b.classList.add('dimmed');
       }
+      b.style.pointerEvents = 'none';
     });
 
-    // Spawn comic action sticker popup
-    this.spawnActionSticker();
+    const answerStatus = document.getElementById('answer-status');
+    if (answerStatus) answerStatus.textContent = '...';
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
@@ -216,6 +235,15 @@ class PlayerApp {
         break;
       }
 
+      case 'ERROR': {
+        this.hasAnswered = false;
+        this.selectedOption = null;
+        document.querySelectorAll('.mcq-btn').forEach(btn => btn.classList.remove('selected-pending', 'selected-accepted', 'dimmed'));
+        const answerStatus = document.getElementById('answer-status');
+        if (answerStatus) answerStatus.textContent = 'ANSWER NOT RECEIVED · TRY AGAIN';
+        break;
+      }
+
       default:
         break;
     }
@@ -223,11 +251,25 @@ class PlayerApp {
 
   handleAnswerResult(result) {
     if (!result) return;
-    if (result.isCorrect) {
-      if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
-    } else {
-      if (navigator.vibrate) navigator.vibrate([150]);
+    if (!result.success) {
+      this.hasAnswered = false;
+      this.selectedOption = null;
+      document.querySelectorAll('.mcq-btn').forEach(btn => btn.classList.remove('selected-pending', 'selected-accepted', 'reveal-correct', 'reveal-wrong', 'dimmed'));
+      const answerStatus = document.getElementById('answer-status');
+      if (answerStatus) answerStatus.textContent = 'ANSWER NOT RECEIVED · TRY AGAIN';
+      return;
     }
+
+    document.querySelectorAll('.mcq-btn').forEach(btn => {
+      btn.classList.remove('selected-pending', 'selected-accepted');
+      if (parseInt(btn.dataset.opt, 10) === this.selectedOption) {
+        btn.classList.add(result.isCorrect ? 'reveal-correct' : 'reveal-wrong');
+      } else {
+        btn.classList.add('dimmed');
+      }
+    });
+    const answerStatus = document.getElementById('answer-status');
+    if (answerStatus) answerStatus.textContent = result.isCorrect ? 'CORRECT!' : 'INCORRECT!';
   }
 
   updatePlayerUI() {
@@ -236,7 +278,7 @@ class PlayerApp {
     const isBit = this.player.teamId === 'bit';
 
     // Update body theme classes
-    document.body.className = isBit ? 'team-bit' : 'team-build';
+    document.body.className = `player-page ${isBit ? 'team-bit' : 'team-build'}`;
 
     // Header bar
     const teamNameEl = document.getElementById('user-team-name');
@@ -248,6 +290,11 @@ class PlayerApp {
       teamNameEl.textContent = isBit ? 'TEAM BIT (MILES)' : 'TEAM BUILD (GWEN)';
       teamNameEl.style.color = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
     }
+    const topTeam = document.getElementById('top-team-name');
+    if (topTeam) {
+       topTeam.textContent = isBit ? 'BIT' : 'BUILD';
+       topTeam.style.color = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
+    }
     if (teamDotEl) {
       teamDotEl.style.background = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
     }
@@ -257,6 +304,7 @@ class PlayerApp {
     // Lobby Screen
     const lobbyTitle = document.getElementById('lobby-team-title');
     const lobbyHero = document.getElementById('lobby-team-hero');
+    const lobbyArtLabel = document.getElementById('lobby-art-label');
     const lobbyMascot = document.getElementById('lobby-mascot-img');
     const lobbyCard = document.getElementById('lobby-panel-card');
 
@@ -265,10 +313,11 @@ class PlayerApp {
       lobbyTitle.style.color = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
     }
     if (lobbyHero) {
-      lobbyHero.textContent = isBit ? 'Fighting alongside Miles Morales' : 'Fighting alongside Spider-Gwen';
+      lobbyHero.textContent = isBit ? 'MILES MORALES' : 'SPIDER-GWEN';
     }
+    if (lobbyArtLabel) lobbyArtLabel.textContent = isBit ? 'TEAM BIT' : 'TEAM BUILD';
     if (lobbyMascot) {
-      lobbyMascot.src = isBit ? '/img/miles.png' : '/img/gwen.png';
+      lobbyMascot.src = isBit ? '/img/miles.webp' : '/img/gwen.webp';
       lobbyMascot.style.filter = `drop-shadow(0 4px 16px ${isBit ? 'var(--bit-red-glow)' : 'var(--build-pink-glow)'})`;
     }
     if (lobbyCard) {
@@ -309,6 +358,12 @@ class PlayerApp {
       const buildFill = document.getElementById('build-bar-fill');
       const buildVal = document.getElementById('build-pct-val');
       const lobbyCount = document.getElementById('lobby-online-count');
+      const lobbyBitCount = document.getElementById('lobby-bit-count');
+      const lobbyBuildCount = document.getElementById('lobby-build-count');
+      const gameBitScore = document.getElementById('game-bit-score');
+      const gameBuildScore = document.getElementById('game-build-score');
+      const gameBitPlayers = document.getElementById('game-bit-players');
+      const gameBuildPlayers = document.getElementById('game-build-players');
 
       const bitPct = state.teams.bit ? state.teams.bit.percent : 0;
       const buildPct = state.teams.build ? state.teams.build.percent : 0;
@@ -322,6 +377,12 @@ class PlayerApp {
       if (lobbyCount) {
         lobbyCount.textContent = (state.onlinePlayers || 0);
       }
+      if (lobbyBitCount) lobbyBitCount.textContent = state.teams.bit ? state.teams.bit.playerCount : 0;
+      if (lobbyBuildCount) lobbyBuildCount.textContent = state.teams.build ? state.teams.build.playerCount : 0;
+      if (gameBitScore) gameBitScore.textContent = (state.teams.bit ? state.teams.bit.score : 0).toLocaleString();
+      if (gameBuildScore) gameBuildScore.textContent = (state.teams.build ? state.teams.build.score : 0).toLocaleString();
+      if (gameBitPlayers) gameBitPlayers.textContent = state.teams.bit ? state.teams.bit.playerCount : 0;
+      if (gameBuildPlayers) gameBuildPlayers.textContent = state.teams.build ? state.teams.build.playerCount : 0;
     }
 
     // Stage Routing
@@ -334,6 +395,52 @@ class PlayerApp {
         if (key === name) el.classList.add('active');
         else el.classList.remove('active');
       }
+    }
+    const bgWatermark = document.querySelector('.bg-watermark');
+    if (bgWatermark) {
+       if (name === 'game') {
+           if (!bgWatermark.dataset.shrunk) {
+               bgWatermark.style.display = 'block';
+               bgWatermark.classList.remove('fade-out');
+               bgWatermark.style.top = '50%';
+               bgWatermark.style.left = '50%';
+               bgWatermark.style.width = '110%';
+               
+               void bgWatermark.offsetWidth; // force reflow
+               bgWatermark.dataset.shrunk = 'true';
+
+               const canvasEl = document.getElementById('mobile-spider-canvas');
+               if (canvasEl) {
+                   const watermarkParent = bgWatermark.offsetParent || document.body;
+                   const parentRect = watermarkParent.getBoundingClientRect();
+                   const rect = canvasEl.getBoundingClientRect();
+                   bgWatermark.style.top = (rect.top - parentRect.top + rect.height/2) + 'px';
+                   bgWatermark.style.left = (rect.left - parentRect.left + rect.width/2) + 'px';
+                   bgWatermark.style.width = rect.width + 'px';
+               } else {
+                   bgWatermark.style.top = '85%';
+                   bgWatermark.style.width = '140px';
+               }
+
+               setTimeout(() => {
+                   if (bgWatermark.dataset.shrunk) {
+                       bgWatermark.classList.add('fade-out');
+                   }
+               }, 1500);
+               setTimeout(() => {
+                   if (bgWatermark.dataset.shrunk) {
+                       bgWatermark.style.display = 'none';
+                   }
+               }, 2300);
+           }
+       } else {
+           bgWatermark.style.display = 'block';
+           bgWatermark.classList.remove('fade-out');
+           delete bgWatermark.dataset.shrunk;
+           bgWatermark.style.top = '50%';
+           bgWatermark.style.left = '50%';
+           bgWatermark.style.width = '110%';
+       }
     }
   }
 
@@ -351,6 +458,31 @@ class PlayerApp {
       return;
     }
 
+    const spideyWrap = document.getElementById('hanging-spidey-wrap');
+    if (spideyWrap) {
+      if (state.stage === 'LOBBY' || state.stage === 'JOIN') {
+        spideyWrap.classList.remove('pulled-up');
+        spideyWrap.style.animation = ''; // restore swing
+        spideyWrap.style.transform = '';
+        spideyWrap.style.transition = '';
+      } else {
+        if (!spideyWrap.classList.contains('pulled-up')) {
+          spideyWrap.classList.add('pulled-up');
+          const currentTransform = window.getComputedStyle(spideyWrap).transform;
+          spideyWrap.style.animation = 'none';
+          spideyWrap.style.transform = currentTransform;
+          
+          // force reflow to ensure it doesn't snap
+          void spideyWrap.offsetWidth;
+
+          requestAnimationFrame(() => {
+            spideyWrap.style.transition = 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            spideyWrap.style.transform = 'translateY(-150%)';
+          });
+        }
+      }
+    }
+
     switch (state.stage) {
       case 'LOBBY': {
         this.showScreen('lobby');
@@ -362,9 +494,11 @@ class PlayerApp {
         this.showGameView('countdown');
 
         const countEl = document.getElementById('countdown-num');
+        const countdownRound = document.getElementById('countdown-round');
         if (countEl) {
           countEl.textContent = state.countdown;
         }
+        if (countdownRound) countdownRound.textContent = `ROUND ${state.qIndex + 1} / ${state.totalQuestions}`;
         this.hasAnswered = false;
         this.selectedOption = null;
         break;
@@ -376,7 +510,9 @@ class PlayerApp {
 
         const q = state.question;
         if (q) {
-          document.getElementById('q-meta-round').textContent = `ROUND ${state.qIndex + 1} / ${state.totalQuestions}`;
+          const roundText = `ROUND ${state.qIndex + 1} / ${state.totalQuestions}`;
+          document.getElementById('q-meta-round').textContent = roundText;
+          document.getElementById('game-round-count').textContent = roundText;
           document.getElementById('q-category-badge').textContent = q.category || 'TECH';
           document.getElementById('q-difficulty-badge').textContent = q.difficulty || 'MEDIUM';
           document.getElementById('q-part-tag').textContent = `TARGET: ${q.spiderPart || 'SPIDER NODE'}`;
@@ -389,16 +525,37 @@ class PlayerApp {
             if (label && q.options && q.options[idx]) {
               label.textContent = q.options[idx];
             }
-            btn.classList.remove('selected-accepted', 'dimmed', 'reveal-correct', 'reveal-wrong');
+            btn.classList.remove('selected-pending', 'selected-accepted', 'dimmed', 'reveal-correct', 'reveal-wrong');
+            btn.style.pointerEvents = 'auto';
           });
+
+          const answerStatus = document.getElementById('answer-status');
+          if (answerStatus) {
+            if (state.playerAnswer) {
+              answerStatus.textContent = state.playerAnswer.isCorrect ? 'CORRECT!' : 'INCORRECT!';
+            } else {
+              answerStatus.textContent = this.hasAnswered ? '...' : 'CHOOSE AN ANSWER';
+            }
+          }
 
           // Re-highlight if reconnecting
           if (state.playerAnswer) {
             this.hasAnswered = true;
             const chosen = state.playerAnswer.optionIndex;
+            this.selectedOption = chosen;
             btns.forEach(b => {
-              if (parseInt(b.dataset.opt, 10) === chosen) b.classList.add('selected-accepted');
+              if (parseInt(b.dataset.opt, 10) === chosen) {
+                b.classList.add(state.playerAnswer.isCorrect ? 'reveal-correct' : 'reveal-wrong');
+              } else {
+                b.classList.add('dimmed');
+              }
+              b.style.pointerEvents = 'none';
+            });
+          } else if (this.hasAnswered) {
+            btns.forEach(b => {
+              if (parseInt(b.dataset.opt, 10) === this.selectedOption) b.classList.add('selected-pending');
               else b.classList.add('dimmed');
+              b.style.pointerEvents = 'none';
             });
           }
 
@@ -407,7 +564,10 @@ class PlayerApp {
           if (timerFill) {
             const pct = Math.max(0, (state.remainingSec / (q.timeLimitSec || 15)) * 100);
             timerFill.style.width = `${pct}%`;
+            timerFill.setAttribute('aria-valuenow', String(state.remainingSec));
           }
+          const timerClock = document.getElementById('q-timer-clock');
+          if (timerClock) timerClock.textContent = `${state.remainingSec}s`;
         }
         break;
       }
@@ -417,6 +577,7 @@ class PlayerApp {
         this.showGameView('reveal');
 
         const q = state.question;
+        if (state.playerAnswer) this.selectedOption = state.playerAnswer.optionIndex;
         const resTitle = document.getElementById('reveal-title');
         const resSub = document.getElementById('reveal-sub');
         const resBox = document.getElementById('reveal-box');
@@ -440,16 +601,16 @@ class PlayerApp {
           if (state.playerAnswer.isCorrect) {
             if (resBox) resBox.className = 'reveal-card correct';
             if (resTitle) {
-              resTitle.textContent = '⚡ THWIP! CORRECT!';
+              resTitle.textContent = 'CORRECT';
               resTitle.style.color = 'var(--orchid)';
             }
             if (resSub) {
-              resSub.textContent = `+${state.playerAnswer.points} Points added to ${this.player.teamId === 'bit' ? 'Team Bit' : 'Team Build'}!`;
+              resSub.textContent = `Response Time: ${state.playerAnswer.timeElapsedMs}ms · ${this.player.teamId === 'bit' ? 'Team Bit' : 'Team Build'}`;
             }
           } else {
             if (resBox) resBox.className = 'reveal-card wrong';
             if (resTitle) {
-              resTitle.textContent = '🕸️ MISSED!';
+              resTitle.textContent = 'NOT QUITE';
               resTitle.style.color = 'var(--red)';
             }
             if (resSub) {
@@ -459,7 +620,7 @@ class PlayerApp {
         } else {
           if (resBox) resBox.className = 'reveal-card';
           if (resTitle) {
-            resTitle.textContent = '⏳ TIME UP!';
+              resTitle.textContent = 'TIME UP';
             resTitle.style.color = 'var(--orchid)';
           }
           if (resSub) {
@@ -484,8 +645,8 @@ class PlayerApp {
 
         if (winSub) {
           winSub.textContent = isWinner
-            ? '🏆 YOUR TEAM FULLY ASSEMBLED THE SPIDER-MAN EMBLEM!'
-            : '🕸️ YOUR CREW CAME THROUGH! THE CITY IS SAFE!';
+            ? 'YOUR TEAM BUILT IT'
+            : 'YOUR TEAM FINISHED SECOND';
         }
 
         // Populate Top 5 MVPs Leaderboard Table with Accuracy (Correct Count) & Score
@@ -494,16 +655,15 @@ class PlayerApp {
           const mvps = state.topContributors[state.winnerTeam] || [];
           top5List.innerHTML = mvps.map((mvp, idx) => {
             const isMe = mvp.id === this.player.id;
-            const rankIcon = idx === 0 ? '👑' : `#${idx + 1}`;
+            const rankIcon = idx === 0 ? '1ST' : `#${idx + 1}`;
             const correctCount = mvp.correctCount || 0;
-            const totalQ = state.totalQuestions || 8;
+            const totalQ = state.totalQuestions || 10;
 
             return `
               <li class="leaderboard-row ${idx === 0 ? 'rank-1' : ''} ${isMe ? 'is-me' : ''}">
                 <span class="rank-col">${rankIcon}</span>
-                <span class="name-col">${mvp.nickname} ${isMe ? '⭐ (YOU)' : ''}</span>
-                <span class="accuracy-col">🎯 ${correctCount}/${totalQ} Correct</span>
-                <span class="score-col">${(mvp.score || 0).toLocaleString()} PTS</span>
+                <span class="name-col">${escapeHtml(mvp.nickname)} ${isMe ? '(YOU)' : ''}</span>
+                <span class="accuracy-col">CORRECT: ${correctCount}/${totalQ} (${(mvp.totalResponseTimeMs / 1000).toFixed(1)}s)</span>
               </li>
             `;
           }).join('');

@@ -1,30 +1,19 @@
 /**
  * Authentic Marvel Spider-Man Emblem Vector Engine
  * High-performance 60 FPS HTML5 Canvas renderer using official Spider-Man vector silhouette.
- * Features:
- * - Authentic Marvel Spider-Man chest emblem path
- * - Progressive laser energy fill as team answers correctly
- * - Laser web filament surge lines and bio-electric sparks
- * - Glowing joint nodes that ignite tier-by-tier
- * - Responsive Retina high-DPI scaling
  */
 
-const SPIDER_PATH_D = "";
-
-// Nodes mapped to the Spidey Head image
-const EMBLEM_JOINTS = [
-  { id: 0, x: 24, y: 10, tier: 1, label: 'Alert Center' },
-  { id: 1, x: 14, y: 18, tier: 2, label: 'Alert Left' },
-  { id: 2, x: 34, y: 18, tier: 2, label: 'Alert Right' },
-  { id: 3, x: 24, y: 30, tier: 3, label: 'Forehead' },
-  { id: 4, x: 12, y: 40, tier: 4, label: 'Left Eye Top' },
-  { id: 5, x: 36, y: 40, tier: 4, label: 'Right Eye Top' },
-  { id: 6, x: 16, y: 52, tier: 5, label: 'Left Eye Bottom' },
-  { id: 7, x: 32, y: 52, tier: 5, label: 'Right Eye Bottom' },
-  { id: 8, x: 8,  y: 46, tier: 6, label: 'Left Jaw' },
-  { id: 9, x: 40, y: 46, tier: 6, label: 'Right Jaw' },
-  { id: 10, x: 24, y: 58, tier: 7, label: 'Chin' },
-  { id: 11, x: 24, y: 65, tier: 8, label: 'Neck base' }
+const REVEAL_REGIONS = [
+  { type: 'oval', x: 24, y: 39, rx: 6, ry: 16 }, // 1: Body
+  { type: 'oval', x: 24, y: 16, rx: 5, ry: 7 },  // 2: Head
+  { type: 'rect', rect: [0, 0, 24, 22] },        // 3: Top Left Leg
+  { type: 'rect', rect: [24, 0, 24, 22] },       // 4: Top Right Leg
+  { type: 'rect', rect: [0, 22, 24, 12] },       // 5: Mid Left Leg
+  { type: 'rect', rect: [24, 22, 24, 12] },      // 6: Mid Right Leg
+  { type: 'rect', rect: [0, 34, 24, 12] },       // 7: Low Left Leg
+  { type: 'rect', rect: [24, 34, 24, 12] },      // 8: Low Right Leg
+  { type: 'rect', rect: [0, 46, 24, 19] },       // 9: Bottom Left Leg
+  { type: 'rect', rect: [24, 46, 24, 19] }       // 10: Bottom Right Leg
 ];
 
 export class SpiderCanvasRenderer {
@@ -42,13 +31,22 @@ export class SpiderCanvasRenderer {
 
     // Load the actual user image
     this.img = new Image();
-    this.img.src = '/img/spider-alert.png';
+    this.img.src = '/img/spider-emblem.svg';
     this.imgLoaded = false;
     this.img.onload = () => { this.imgLoaded = true; };
 
-    this.sparks = [];
-    this.animTime = 0;
     this.isRunning = false;
+    this.frameId = 0;
+    this.lastFrameTime = 0;
+    this.handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (this.frameId) cancelAnimationFrame(this.frameId);
+        this.frameId = 0;
+      } else {
+        this.scheduleDraw();
+      }
+    };
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
     this.setupResizeHandler();
   }
@@ -63,25 +61,28 @@ export class SpiderCanvasRenderer {
 
   updateUnlocked(unlockedNodeIds = [], unlockedEdges = []) {
     const count = Array.isArray(unlockedNodeIds) ? unlockedNodeIds.length : (unlockedNodeIds.size || 0);
-    this.targetPercent = Math.min(100, Math.round((count / 48) * 100));
-    this.unlockedTier = Math.min(8, Math.ceil(this.targetPercent / 12.5));
+    this.targetPercent = Math.min(100, Math.round((count / 10) * 100));
+    this.unlockedTier = Math.min(10, Math.ceil(this.targetPercent / 10));
+    this.scheduleDraw();
   }
 
   setProgress(percent) {
     this.targetPercent = Math.max(0, Math.min(100, percent));
-    this.unlockedTier = Math.min(8, Math.ceil(this.targetPercent / 12.5));
+    this.unlockedTier = Math.min(10, Math.ceil(this.targetPercent / 10));
+    this.scheduleDraw();
   }
 
   setupResizeHandler() {
     this.resize = () => {
       const rect = this.canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      const displayWidth = Math.max(120, Math.floor(rect.width));
-      const displayHeight = Math.max(120, Math.floor(rect.height));
+      const displayWidth = Math.max(100, Math.floor(rect.width));
+      const displayHeight = Math.max(100, Math.floor(rect.height));
 
       if (this.canvas.width !== displayWidth * dpr || this.canvas.height !== displayHeight * dpr) {
         this.canvas.width = displayWidth * dpr;
         this.canvas.height = displayHeight * dpr;
+        this.scheduleDraw();
       }
     };
     window.addEventListener('resize', this.resize);
@@ -91,46 +92,28 @@ export class SpiderCanvasRenderer {
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    let lastTime = performance.now();
+    this.scheduleDraw();
+  }
 
-    const loop = (now) => {
-      if (!this.isRunning) return;
-      const dt = Math.min(0.1, (now - lastTime) / 1000);
-      lastTime = now;
-      this.animTime += dt;
-      this.percent += (this.targetPercent - this.percent) * Math.min(1, dt * 5);
-      this.update(dt);
+  scheduleDraw() {
+    if (!this.isRunning || document.hidden || this.frameId) return;
+    this.frameId = requestAnimationFrame((now) => {
+      this.frameId = 0;
+      const dt = this.lastFrameTime ? Math.min(0.1, (now - this.lastFrameTime) / 1000) : 1 / 60;
+      this.lastFrameTime = now;
+      const remaining = this.targetPercent - this.percent;
+      this.percent = Math.abs(remaining) < 0.05
+        ? this.targetPercent
+        : this.percent + remaining * Math.min(1, dt * 5);
       this.draw();
-      requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+      if (this.percent !== this.targetPercent) this.scheduleDraw();
+    });
   }
 
   stop() {
     this.isRunning = false;
-  }
-
-  update(dt) {
-    if (this.percent > 0 && Math.random() < 0.25) {
-      const p1 = EMBLEM_JOINTS[Math.floor(Math.random() * EMBLEM_JOINTS.length)];
-      const p2 = EMBLEM_JOINTS[Math.floor(Math.random() * EMBLEM_JOINTS.length)];
-      if (p1 && p2 && p1.id !== p2.id) {
-        this.sparks.push({
-          x1: p1.x, y1: p1.y,
-          x2: p2.x, y2: p2.y,
-          progress: 0,
-          speed: 1.8 + Math.random() * 2.0,
-          color: Math.random() > 0.4 ? this.themeColor : '#ffffff'
-        });
-      }
-    }
-    for (let i = this.sparks.length - 1; i >= 0; i--) {
-      const s = this.sparks[i];
-      s.progress += s.speed * dt;
-      if (s.progress >= 1.0) {
-        this.sparks.splice(i, 1);
-      }
-    }
+    if (this.frameId) cancelAnimationFrame(this.frameId);
+    this.frameId = 0;
   }
 
   draw() {
@@ -141,7 +124,7 @@ export class SpiderCanvasRenderer {
 
     ctx.clearRect(0, 0, w, h);
 
-    const padding = 16 * (window.devicePixelRatio || 1);
+    const padding = 4 * (window.devicePixelRatio || 1);
     const usableW = w - padding * 2;
     const usableH = h - padding * 2;
 
@@ -149,82 +132,41 @@ export class SpiderCanvasRenderer {
     const offsetX = padding + (usableW - 48 * scale) / 2;
     const offsetY = padding + (usableH - 65 * scale) / 2;
 
-    const toX = (vx) => offsetX + vx * scale;
-    const toY = (vy) => offsetY + vy * scale;
-
     ctx.save();
     ctx.translate(offsetX, offsetY);
     ctx.scale(scale, scale);
 
     if (this.imgLoaded) {
-      // Draw faded base image
-      ctx.globalAlpha = 0.15;
-      ctx.drawImage(this.img, 0, 0, 48, 65);
-      
-      // Draw revealed image
-      if (this.percent > 0) {
-        ctx.save();
-        ctx.globalAlpha = 1.0;
-        const revealH = (this.percent / 100) * 65;
-        ctx.beginPath();
-        ctx.rect(0, 65 - revealH, 48, revealH);
-        ctx.clip();
-        ctx.drawImage(this.img, 0, 0, 48, 65);
-        ctx.restore();
+      for (let i = 0; i < 10; i++) {
+        const tierStart = i * 10;
+        const opacity = Math.max(0, Math.min(1, (this.percent - tierStart) / 10));
         
-        // Active horizon bar
-        const horizonY = 65 - revealH;
-        if (horizonY > 0 && horizonY < 65) {
-          ctx.shadowColor = this.themeColor;
-          ctx.shadowBlur = 10;
-          ctx.strokeStyle = this.themeColor;
-          ctx.lineWidth = 1.4 / scale;
+        if (opacity > 0) {
+          const r = REVEAL_REGIONS[i];
+          ctx.save();
           ctx.beginPath();
-          ctx.moveTo(0, horizonY);
-          ctx.lineTo(48, horizonY);
-          ctx.stroke();
+          if (r.type === 'oval') {
+            ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
+          } else if (r.type === 'circle') {
+            ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+          } else if (r.type === 'rect') {
+            ctx.rect(r.rect[0], r.rect[1], r.rect[2], r.rect[3]);
+          }
+          ctx.clip();
+          
+          ctx.globalAlpha = opacity;
+          ctx.filter = 'brightness(0.3)';
+          ctx.drawImage(this.img, 0, 0, 48, 65);
+          ctx.restore();
         }
       }
     }
     ctx.restore();
-
-    const currentTier = Math.ceil((this.percent / 100) * 8);
-
-    for (const s of this.sparks) {
-      const cx = toX(s.x1 + (s.x2 - s.x1) * s.progress);
-      const cy = toY(s.y1 + (s.y2 - s.y1) * s.progress);
-      ctx.shadowColor = s.color;
-      ctx.shadowBlur = 4;
-      ctx.fillStyle = s.color;
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(1, 2 * (scale / 4)), 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    for (const joint of EMBLEM_JOINTS) {
-      const isLit = joint.tier <= currentTier && this.percent > 0;
-      const jx = toX(joint.x);
-      const jy = toY(joint.y);
-
-      if (isLit) {
-        ctx.shadowColor = this.themeColor;
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = this.themeColor;
-        ctx.beginPath();
-        ctx.arc(jx, jy, Math.max(2, 3 * (scale / 4)), 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.beginPath();
-        ctx.arc(jx, jy, Math.max(1, 1.5 * (scale / 4)), 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
   }
 
   destroy() {
     this.stop();
     window.removeEventListener('resize', this.resize);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

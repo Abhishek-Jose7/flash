@@ -6,11 +6,10 @@ A high-concurrency, mobile-first, real-time interactive game platform built for 
 
 ## ⚡ Key Highlights & Architecture
 
-- **High-Burst QR Onboarding**: Instantaneous load (< 80ms) for 100–200+ simultaneous phone scans.
-- **In-Memory Atomic State Engine (O(1))**: Eliminates all N+1 database bottlenecks. Answer submissions, scoring, and node unlocks happen in-memory with atomic counters.
+- **High-Burst QR Onboarding**: 300- and 500-client WebSocket bursts are exercised by the included load harness; the observed local runs completed without connection or answer errors.
+- **In-Memory Game State**: Answer submissions, scoring, and team progress update without database round trips. State is held in one Node process and resets when that process restarts.
 - **Idempotency Protection**: Double-taps, retries, and network glitches are gracefully handled without duplicate scoring or duplicate node unlocks.
-- **The Amazing Spider-Man Node Graph**: Predefined mathematical model with **48 nodes and 64 edges** rendered at 60 FPS on HTML5 Canvas with glowing laser filaments, pulse particles, and chromatic aberration glitch bursts.
-- **0 KB Procedural Web Audio**: Sound synthesizer using the browser's Web Audio API for countdown ticks, comic "THWIP!" web sounds, correct chimes, buzzers, and victory fanfare without downloading any audio files.
+- **Progressive Emblem Reveal**: The player page animates the emblem as teams unlock progress across the configured rounds. The canvas pauses when progress is idle or the tab is hidden.
 - **Deterministic Top 5 MVP Podium**: Automatically tracks individual contributions so the top 5 contributors from the winning team are revealed at the victory screen with zero database aggregation queries.
 
 ---
@@ -27,7 +26,7 @@ By default, the server runs on port `3000`.
 | Screen | URL | Purpose |
 | :--- | :--- | :--- |
 | **Mobile Players** | `http://<HOST-OR-IP>:3000/` | Opened by audience phones via QR code. |
-| **Host Controller** | `http://<HOST-OR-IP>:3000/admin` | Host dashboard to trigger questions, countdowns, and game resets (Passkey: `spiderverse`). |
+| **Host Controller** | `http://<HOST-OR-IP>:3000/admin` | Host dashboard to trigger questions, countdowns, and game resets. Set a unique 32+ character `ADMIN_KEY` in production; local development defaults to `spiderverse`. |
 | **Health Check** | `http://<HOST-OR-IP>:3000/health` | Live server connection and memory telemetry. |
 
 ---
@@ -63,15 +62,15 @@ npm test
 ```
 *Verifies graph geometry, team balancing, double-tap idempotency, node unlock progression, and Top 5 MVP ranking.*
 
-### Run 250–500 Concurrent Player Stress Test
+### Run 300–500 Concurrent Player Stress Test
 ```bash
-# Test with 250 simultaneous players
+# Test with 300 simultaneous players (uses port 3100 by default)
 npm run test:load
 
 # Test with 500 simultaneous players
 CLIENTS=500 node tests/loadTest.js
 ```
-*Simulates 250–500 phones connecting in a 1-second QR burst and submitting Kahoot answers simultaneously.*
+*Simulates a concentrated connection burst, team assignment, simultaneous answers, and duplicate submissions. Results depend on the host hardware; these checks are not a production capacity guarantee.*
 
 ---
 

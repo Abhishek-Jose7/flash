@@ -2,156 +2,173 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#E3212A">
-  <meta name="description" content="Join Bit N Build, a live Spider-Man team game.">
-  <title>Bit N Build — Join the Game</title>
-  <link rel="stylesheet" href="/css/webhead.css?v=mobile7">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#2b84c6">
+  <title>Spidey Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/webhead.css?v=tracker11">
 </head>
 <body class="player-page">
-  <div class="page-grain" aria-hidden="true"></div>
-  <div class="app-container">
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="Bit N Build home">
-        <img src="/img/spider-emblem.svg" alt="">
-        <span>BIT N BUILD</span>
-      </a>
-      <div class="session-meta">
-        <span class="session-dot" id="user-team-dot"></span>
-        <span id="user-team-name">READY TO JOIN</span>
-      </div>
-      <div class="topbar-right">
-        <span class="score-display"><span id="user-score-val">0</span> <small>PTS</small></span>
-      </div>
-    </header>
+  <!-- Hidden elements that playerApp.js expects but we don't need in the new UI -->
+  <div style="display:none;">
+    <span id="user-team-name"></span>
+    <span id="user-team-dot"></span>
+    <span id="user-score-val"></span>
+    <div id="sticker-container"></div>
+    <span id="game-bit-players"></span>
+    <span id="game-build-players"></span>
+    <span id="q-meta-round"></span>
+    <span id="q-category-badge"></span>
+    <span id="q-difficulty-badge"></span>
+    <span id="q-part-tag"></span>
+    <span id="bit-pct-val"></span>
+    <span id="build-pct-val"></span>
+    <div id="bit-bar-fill"></div>
+    <div id="build-bar-fill"></div>
+  </div>
 
-    <main class="screens">
-      <section id="screen-join" class="screen active">
-        <div class="join-copy">
-          <div class="team-duel" aria-label="Bit and Build teams">
-            <div class="team-token bit-token">
-              <img src="/img/milesIcon.png" alt="">
-              <span><strong>BIT</strong></span>
-            </div>
-            <div class="team-token build-token">
-              <img src="/img/gwenIcon.png" alt="">
-              <span><strong>BUILD</strong></span>
-            </div>
-          </div>
-
-          <label class="sr-only" for="input-nick">Enter your name</label>
-          <div class="join-input-wrap">
-            <input id="input-nick" type="text" maxlength="20" placeholder="Enter your name" autocomplete="name" autocorrect="off">
-          </div>
-          <div id="join-error-msg" class="field-error">Enter your name to join.</div>
-          <button id="btn-join" class="action-button">JOIN THE GAME</button>
-          <span id="conn-status" class="sr-only" aria-live="polite">Connecting</span>
+  <div class="tracker-device">
+    <!-- Pop-out images attached to device -->
+    <img src="/img/spider-alert.webp" class="header-left-img" alt="spider alert">
+    <div id="top-conn-status" style="position: absolute; top: 65px; left: -5px; font-size: 8px; color: var(--text-cyan); z-index: 50;">[CONNECTING]</div>
+    <img src="/img/user-maze-cutout.webp" class="header-right-img" alt="user maze">
+    <img src="/img/snoopy-standing.webp" alt="Snoopy" class="snoopy-img">
+    
+    <div class="tracker-inner-bezel">
+      
+      <!-- Header -->
+      <div class="tracker-header">
+        <div style="width: 50px;"></div>
+        <div class="header-pill">
+          <span id="top-team-name">SPIDEY</span>
+          <img src="/img/spider-emblem.svg" class="header-spider">
+          <span>TRACKER</span>
         </div>
+        <div style="width: 50px;"></div>
+      </div>
 
-        <aside class="hero-visual" aria-label="Spider-Man swinging through the city">
-          <img class="hero-scene" src="/img/swinging-insomniac.gif" alt="Miles Morales swinging over a city street">
-          <div class="hero-colorwash" aria-hidden="true"></div>
-          <img class="hero-miles blend-light" src="/img/user-miles-pose.png" alt="Miles Morales in his black suit">
-          <img class="hero-chibi blend-dark" src="/img/user-spidey-sticker.png" alt="Spider-Man chibi illustration">
-          <img class="hero-maze" src="/img/user-maze-cutout.png" alt="Colorful pixel maze">
-          <img class="hero-note" src="/img/user-do-over-cutout.png" alt="All right, let’s do this again">
-        </aside>
-      </section>
-
-      <section id="screen-lobby" class="screen">
-        <div id="lobby-panel-card" class="lobby-card">
-          <div class="lobby-copy">
-            <p class="eyebrow"><span>WELCOME, WEBHEAD</span> · YOUR CREW IS SET</p>
-            <h2 id="lobby-team-title">YOU’RE ON TEAM BIT</h2>
-            <p id="lobby-team-hero" class="lobby-subtitle">Get ready for the first question.</p>
-            <div class="player-id-block"><small>SPIDER NAME</small><strong id="user-nick-display">—</strong></div>
-            <div class="lobby-count"><span class="count-mark">✳</span><span><strong id="lobby-online-count">0</strong> slingers are ready across the multiverse</span></div>
-            <p class="lobby-wait"><span class="wait-pulse"></span> Waiting for the host to launch the quiz</p>
-            <p class="lobby-hint">Questions will arrive on your phone, one at a time.</p>
-          </div>
-          <div class="lobby-art">
-            <div class="lobby-art-label">YOUR UNIVERSE / YOUR TEAM</div>
-            <img id="lobby-mascot-img" src="/img/miles.png" alt="Your team's hero">
-            <img class="lobby-sidekick blend-dark" src="/img/user-spidey-snoopy.png" alt="Snoopy with a Spider-Man figure">
-            <img class="lobby-pixel blend-light" src="/img/user-pixel-spider.png" alt="Pixel Spider-Man">
+      <!-- Content Area -->
+      <div class="tracker-content">
+        <!-- Background watermark -->
+        <div class="bg-watermark">
+          <img src="/img/spider-emblem.svg" alt="watermark">
+        </div>
+        
+        <div class="hanging-container" id="hanging-spidey-wrap">
+          <div class="hanging-line"></div>
+          <div class="hanging-head">
+             <div class="pixel-head">
+                <div class="ph-eye left"></div>
+                <div class="ph-eye right"></div>
+             </div>
           </div>
         </div>
-      </section>
+        
+        <main class="screens">
+          <!-- JOIN SCREEN -->
+          <section id="screen-join" class="screen active">
+            <div class="dialog-box">
+              <p style="margin-bottom: 10px; color: var(--text-cyan);">ENTER ROLL NUMBER</p>
+              <div class="join-form">
+                <input id="input-nick" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="ROLL NO" autocomplete="off" autocorrect="off">
+                <button id="btn-join" class="btn-pixel active-btn">OK</button>
+              </div>
+              <div id="join-error-msg" class="error-msg" style="display:none;">Enter a valid roll number.</div>
+              <div id="conn-status" class="status-msg"></div>
+            </div>
+          </section>
 
-      <section id="screen-game" class="screen">
-        <div class="game-layout">
-          <div class="game-main">
-            <div id="view-countdown" class="countdown-box" style="display:none">
-              <span class="eyebrow">INCOMING QUESTION</span>
-              <div id="countdown-num" class="countdown-digits">3</div>
-              <div class="countdown-caption">GET READY TO TAP</div>
+          <!-- LOBBY SCREEN -->
+          <section id="screen-lobby" class="screen">
+            <div class="dialog-box">
+              <p>CONNECTION ESTABLISHED.</p>
+              <br>
+              <p id="lobby-team-title" class="highlight lobby-title">YOU'RE ON TEAM BIT</p>
+              <p style="margin-top: 10px;">NAME: <span id="user-nick-display" class="highlight"></span></p>
+
+              <div class="stats-block" style="margin-top: 20px; border-top: 2px dashed #555; padding-top: 10px;">
+                <p>ONLINE: <span id="lobby-online-count" class="highlight">0</span></p>
+                <p>BIT: <span id="lobby-bit-count">0</span> | BUILD: <span id="lobby-build-count">0</span></p>
+              </div>
+            </div>
+            <p class="subtitle blink" style="margin-top: 20px;">WAITING FOR ROUND...</p>
+          </section>
+
+          <!-- GAME SCREEN -->
+          <section id="screen-game" class="screen">
+            <div id="view-countdown" style="display:none" class="view-panel dialog-box">
+              <p id="countdown-round" class="highlight">ROUND 1 / 10</p>
+              <div class="big-counter" id="countdown-num">3</div>
+              <p class="subtitle blink">GET READY</p>
             </div>
 
-            <div id="view-question" class="question-view">
-              <article class="question-card">
-                <div class="question-meta-row">
-                  <span id="q-meta-round" class="round-marker">ROUND 1 / 8</span>
-                  <span id="q-category-badge" class="tag-category">CYBER SECURITY</span>
-                  <span id="q-difficulty-badge" class="tag-difficulty">EASY</span>
-                </div>
-                <p id="q-part-tag" class="question-target-part">TARGET: HEAD &amp; FANGS</p>
-                <h2 id="q-text" class="question-text-box">Loading question…</h2>
-              </article>
-              <div class="timer-track"><div id="timer-bar-fill" class="timer-bar-fill"></div></div>
+            <div id="view-question" style="display:none" class="view-panel">
+              <div class="q-header">
+                <span id="game-round-count">ROUND 1/10</span>
+                <span id="q-timer-clock">15s</span>
+              </div>
+              
+              <div class="timer-bar-wrap">
+                <div id="timer-bar-fill" class="timer-bar-fill"></div>
+              </div>
+
+              <div class="scores-row">
+                <span>BIT: <span id="game-bit-score">0</span>/10</span>
+                <span>BUILD: <span id="game-build-score">0</span>/10</span>
+              </div>
+
+              <div class="question-container dialog-box">
+                <p id="q-text" class="question-text">Loading question...</p>
+              </div>
+              
               <div class="mcq-grid">
-                <button class="mcq-btn opt-0" data-opt="0"><span class="mcq-icon">01</span><span class="mcq-label">Option A</span></button>
-                <button class="mcq-btn opt-1" data-opt="1"><span class="mcq-icon">02</span><span class="mcq-label">Option B</span></button>
-                <button class="mcq-btn opt-2" data-opt="2"><span class="mcq-icon">03</span><span class="mcq-label">Option C</span></button>
-                <button class="mcq-btn opt-3" data-opt="3"><span class="mcq-icon">04</span><span class="mcq-label">Option D</span></button>
+                <button class="mcq-btn opt-0" data-opt="0"><span class="mcq-label">A</span></button>
+                <button class="mcq-btn opt-1" data-opt="1"><span class="mcq-label">B</span></button>
+                <button class="mcq-btn opt-2" data-opt="2"><span class="mcq-label">C</span></button>
+                <button class="mcq-btn opt-3" data-opt="3"><span class="mcq-label">D</span></button>
+              </div>
+              <p id="answer-status" class="status-msg blink" style="margin-top: 10px;">CHOOSE AN ANSWER</p>
+              
+              <div style="width: 140px; height: 140px; margin: 10px auto;">
+                 <canvas id="mobile-spider-canvas" style="width: 100%; height: 100%; image-rendering: pixelated;"></canvas>
               </div>
             </div>
 
-            <div id="view-reveal" class="reveal-view" style="display:none">
-              <article id="reveal-box" class="reveal-card">
-                <p class="eyebrow">ROUND COMPLETE</p>
-                <h2 id="reveal-title" class="reveal-card-title">THWIP! CORRECT!</h2>
-                <p id="reveal-sub">Points added to your team.</p>
-                <small>Watch the city-sized spider assemble on screen.</small>
-              </article>
+            <div id="view-reveal" style="display:none" class="view-panel dialog-box">
+              <div id="reveal-box" class="reveal-card">
+                <p class="highlight">ROUND COMPLETE</p>
+                <br>
+                <h2 id="reveal-title" class="big-result">CORRECT!</h2>
+                <p id="reveal-sub" class="subtitle">Correct answers help assemble the spider!</p>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <aside class="game-assembly">
-            <div class="assembly-heading"><span>THE CITY SPIDER</span><span>LIVE BUILD</span></div>
-            <div class="spider-canvas-wrapper">
-              <canvas id="mobile-spider-canvas" class="spider-canvas"></canvas>
-              <img class="game-pixel blend-light" src="/img/user-pixel-spider.png" alt="">
+          <!-- VICTORY SCREEN -->
+          <section id="screen-victory" class="screen">
+            <div class="victory-card dialog-box">
+              <h1 id="victory-team-banner" class="big-result">TEAM WINS</h1>
+              <p id="victory-sub-banner" class="subtitle" style="margin-bottom: 15px;">THE SPIDER IS FULLY ASSEMBLED</p>
+              
+              <div class="leaderboard" style="border-top: 2px dashed #555; padding-top: 10px;">
+                <p class="highlight" style="margin-bottom: 10px; text-align: center;">TOP WEB-HEADS</p>
+                <ul id="top5-list-mvp"></ul>
+              </div>
             </div>
-            <div class="battle-heading"><span id="bit-pct-val">BIT: 0%</span><strong>ASSEMBLY PROGRESS</strong><span id="build-pct-val">BUILD: 0%</span></div>
-            <div class="battle-track"><div id="bit-bar-fill" class="battle-fill-bit"></div><div id="build-bar-fill" class="battle-fill-build"></div></div>
-            <img class="team-corner team-corner-bit" src="/img/miles.png" alt="Miles Morales">
-            <img class="team-corner team-corner-build" src="/img/gwen.png" alt="Spider-Gwen">
-            <div id="sticker-container" class="sticker-container"></div>
-          </aside>
-        </div>
-      </section>
+          </section>
+        </main>
+      </div>
 
-      <section id="screen-victory" class="screen">
-        <div class="victory-card">
-          <div class="victory-art">
-            <img class="victory-mask blend-dark" src="/img/user-mask-sticker.png" alt="Spider-Man mask sticker">
-            <img class="victory-snoopy blend-dark" src="/img/user-spidey-snoopy.png" alt="Snoopy in a Spider-Man hood">
-            <img class="victory-note" src="/img/user-do-over-cutout.png" alt="All right, let’s do this again">
-          </div>
-          <div class="victory-copy">
-            <p class="eyebrow">THE MULTIVERSE CHAMPIONS</p>
-            <h1 id="victory-team-banner">TEAM BIT WINS</h1>
-            <p id="victory-sub-banner" class="victory-subtitle">THE SPIDER IS FULLY ASSEMBLED</p>
-            <div class="leaderboard-panel">
-            <h2>TOP WEB-HEADS</h2>
-              <ul id="top5-list-mvp" class="leaderboard-list"></ul>
-            </div>
-            <p class="victory-thanks">The city is safe. Thanks for showing up.</p>
-          </div>
-        </div>
-      </section>
-    </main>
+      <!-- Footer -->
+      <div class="tracker-footer">
+        <img src="/img/logobottom.webp" alt="Bit N Build" width="332" height="120" loading="lazy" decoding="async" style="height: 120px; image-rendering: pixelated; display: block;">
+      </div>
+      
+    </div>
   </div>
-  <script type="module" src="/js/playerApp.js?v=mobile7"></script>
+  
+  <script type="module" src="/js/playerApp.js?v=tracker11"></script>
 </body>
 </html>

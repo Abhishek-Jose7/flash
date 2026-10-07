@@ -2,32 +2,32 @@
   {
     "id": 1,
     "difficulty": "EASY",
-    "category": "CYBER SECURITY",
-    "question": "What type of cyber attack tricks users into revealing confidential passwords through fake emails or websites?",
-    "options": ["Phishing", "DDoS Attack", "SQL Injection", "Brute Force"],
+    "category": "TECH BASICS",
+    "question": "What does 'WWW' stand for in a website address?",
+    "options": ["World Wide Web", "Wild Wild West", "Web World Wide", "World Web Warp"],
     "correctIndex": 0,
     "timeLimitSec": 15,
-    "spiderPart": "Head & Fangs Awoken"
+    "spiderPart": "Spider Body Base"
   },
   {
     "id": 2,
     "difficulty": "EASY",
+    "category": "HARDWARE",
+    "question": "Which of these is considered the 'brain' of the computer?",
+    "options": ["GPU", "RAM", "CPU", "SSD"],
+    "correctIndex": 2,
+    "timeLimitSec": 15,
+    "spiderPart": "Spider Head & Eyes"
+  },
+  {
+    "id": 3,
+    "difficulty": "MEDIUM",
     "category": "PYTHON",
     "question": "In Python, which keyword is used to define a function?",
     "options": ["func", "def", "function", "define"],
     "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Thorax Core & Heart"
-  },
-  {
-    "id": 3,
-    "difficulty": "MEDIUM",
-    "category": "WEB DEV",
-    "question": "What does CSS stand for in web development?",
-    "options": ["Computer Style Sheets", "Creative Styling System", "Cascading Style Sheets", "Central Sheet Styles"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "Spine & Abdomen Needle"
+    "spiderPart": "Upper Left Leg"
   },
   {
     "id": 4,
@@ -37,7 +37,7 @@
     "options": ["git branch -new <name>", "git checkout -b <name>", "git switch --make <name>", "git create <name>"],
     "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Upper Leg Tendons"
+    "spiderPart": "Upper Right Leg"
   },
   {
     "id": 5,
@@ -47,31 +47,51 @@
     "options": ["Cross-Site Scripting (XSS)", "SQL Injection (SQLi)", "Man-in-the-Middle (MitM)", "Buffer Overflow"],
     "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Upper Arches & Talons"
+    "spiderPart": "Middle Left Leg"
   },
   {
     "id": 6,
     "difficulty": "MEDIUM",
+    "category": "WEB DEV",
+    "question": "What does CSS stand for in web development?",
+    "options": ["Computer Style Sheets", "Creative Styling System", "Cascading Style Sheets", "Central Sheet Styles"],
+    "correctIndex": 2,
+    "timeLimitSec": 15,
+    "spiderPart": "Middle Right Leg"
+  },
+  {
+    "id": 7,
+    "difficulty": "HARD",
     "category": "ALGORITHMS",
     "question": "What is the average time complexity of searching a key in a Hash Map?",
     "options": ["O(log n)", "O(n)", "O(1)", "O(n²)"],
     "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Lower Leg Roots"
+    "spiderPart": "Lower Left Leg"
   },
   {
-    "id": 7,
+    "id": 8,
     "difficulty": "HARD",
     "category": "DATA STRUCTURES",
     "question": "Which data structure operates strictly on the LIFO (Last In, First Out) principle?",
     "options": ["Queue", "Binary Tree", "Stack", "Linked List"],
     "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Lateral Spider Claws"
+    "spiderPart": "Lower Right Leg"
   },
   {
-    "id": 8,
-    "difficulty": "HARD - BOSS ROUND",
+    "id": 9,
+    "difficulty": "HARD",
+    "category": "NETWORKING",
+    "question": "What port is typically used for secure HTTPS traffic?",
+    "options": ["80", "443", "22", "21"],
+    "correctIndex": 1,
+    "timeLimitSec": 15,
+    "spiderPart": "Bottom Left Leg"
+  },
+  {
+    "id": 10,
+    "difficulty": "BOSS ROUND",
     "category": "JAVASCRIPT",
     "question": "In JavaScript, what does `typeof NaN` evaluate to?",
     "options": ["'undefined'", "'NaN'", "'number'", "'object'"],

@@ -1,166 +1,128 @@
 import { WebSocket } from 'ws';
-import http from 'node:http';
-import { server, engine } from '../server/server.js';
 
-const TOTAL_CLIENTS = parseInt(process.env.CLIENTS || '250', 10);
-const PORT = process.env.PORT || 3000;
-const WS_URL = `ws://localhost:${PORT}`;
-
-console.log(`\n🕷️ =================================================`);
-console.log(`🕷️ HIGH-CONCURRENCY STRESS TEST HARNESS`);
-console.log(`🕷️ Simulating ${TOTAL_CLIENTS} simultaneous mobile players scanning QR`);
-console.log(`🕷️ Target: ${WS_URL}`);
-console.log(`🕷️ =================================================\n`);
+const TOTAL_CLIENTS = Number.parseInt(process.env.CLIENTS || '300', 10);
+const PORT = Number.parseInt(process.env.PORT || '3100', 10);
+process.env.PORT = String(PORT);
+const WS_URL = `ws://127.0.0.1:${PORT}`;
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const { server, engine } = await import('../server/server.js');
 
 async function runLoadTest() {
-  const startTime = Date.now();
   const clients = [];
   let connectedCount = 0;
   let joinedCount = 0;
-  let answersSubmitted = 0;
+  let answersAccepted = 0;
   let duplicateRejections = 0;
   let errorsCount = 0;
+  let answerResults = 0;
 
-  // Step 1: Connect 250+ clients in rapid burst (QR scan frenzy)
-  console.log(`[1/4] Spawning ${TOTAL_CLIENTS} concurrent WebSocket connections...`);
-  const connectPromises = [];
-
-  for (let i = 0; i < TOTAL_CLIENTS; i++) {
-    // 2ms interleave pacing for realistic cellular arrival burst
-    await new Promise(r => setTimeout(r, 2));
-
-    const p = new Promise((resolve) => {
-      const playerId = `stress_player_${i}_${Date.now()}`;
-      const ws = new WebSocket(WS_URL);
-
-      ws.on('open', () => {
-        connectedCount++;
-        // Send JOIN
-        ws.send(JSON.stringify({
-          type: 'JOIN',
-          playerId,
-          nickname: `Slinger-${i}`
-        }));
-      });
-
-      ws.on('message', (raw) => {
-        try {
-          const msg = JSON.parse(raw.toString());
-          if (msg.type === 'JOINED') {
-            joinedCount++;
-            resolve(ws);
-          } else if (msg.type === 'ANSWER_RESULT') {
-            if (msg.result && msg.result.success) {
-              answersSubmitted++;
-            } else if (msg.result && msg.result.reason === 'ALREADY_SUBMITTED') {
-              duplicateRejections++;
-            }
-          }
-        } catch (e) {
-          errorsCount++;
-        }
-      });
-
-      ws.on('error', (err) => {
-        errorsCount++;
-        console.log(`Socket error on client ${i}:`, err.code, err.message);
-        resolve(null);
-      });
-
-      ws.on('close', () => {
-        resolve(null);
-      });
-
-      // Safety timeout
-      setTimeout(() => resolve(null), 6000);
-
-      clients.push({ ws, playerId, id: i });
+  try {
+    await new Promise((resolve, reject) => {
+      if (server.listening) return resolve();
+      server.once('listening', resolve);
+      server.once('error', reject);
     });
 
-    connectPromises.push(p);
-  }
+    console.log(`Starting ${TOTAL_CLIENTS} WebSocket clients against ${WS_URL}`);
+    const connectPromises = [];
 
-  await Promise.all(connectPromises);
-  const connectionDuration = Date.now() - startTime;
-  console.log(`✅ Connections established: ${connectedCount}/${TOTAL_CLIENTS} in ${connectionDuration}ms`);
-  console.log(`✅ Players registered & team-balanced: ${joinedCount}/${TOTAL_CLIENTS}`);
+    for (let i = 0; i < TOTAL_CLIENTS; i++) {
+      const playerId = `stress_player_${i}_${Date.now()}`;
+      const ws = new WebSocket(WS_URL);
+      const client = { ws, playerId, id: i };
+      clients.push(client);
 
-  // Step 2: Trigger Question 1
-  console.log(`\n[2/4] Activating Question 1 across all 250 players...`);
-  engine.activateQuestion(0);
-  const q = engine.getCurrentQuestion();
+      connectPromises.push(new Promise((resolve) => {
+        let settled = false;
+        const finish = (value) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeout);
+          resolve(value);
+        };
+        const timeout = setTimeout(() => finish(null), 10000);
 
-  // Step 3: All 250 players hammer the server with answers simultaneously
-  console.log(`[3/4] Submitting answers simultaneously (simulating Kahoot rush)...`);
-  const answerPromises = clients.map(({ ws, playerId, id }) => {
-    return new Promise((resolve) => {
-      // Stagger slightly between 50ms and 800ms to simulate real human reaction speeds
-      const delay = 50 + Math.random() * 750;
+        ws.on('open', () => {
+          connectedCount++;
+          ws.send(JSON.stringify({ type: 'JOIN', playerId, nickname: `Player-${i}` }));
+        });
+
+        ws.on('message', (raw) => {
+          try {
+            const msg = JSON.parse(raw.toString());
+            if (msg.type === 'JOINED') {
+              joinedCount++;
+              finish(client);
+            } else if (msg.type === 'ANSWER_RESULT') {
+              answerResults++;
+              if (msg.result?.success) answersAccepted++;
+              if (msg.result?.reason === 'ALREADY_SUBMITTED') duplicateRejections++;
+            } else if (msg.type === 'ERROR') {
+              errorsCount++;
+            }
+          } catch {
+            errorsCount++;
+          }
+        });
+
+        ws.on('error', () => {
+          errorsCount++;
+          finish(null);
+        });
+        ws.on('close', () => finish(null));
+      }));
+
+      // Pace the connection ramp slightly while still producing a concentrated burst.
+      if (i % 10 === 9) await delay(10);
+    }
+
+    const joinedClients = (await Promise.all(connectPromises)).filter(Boolean);
+    console.log(`Connected ${connectedCount}/${TOTAL_CLIENTS}; joined ${joinedCount}/${TOTAL_CLIENTS}`);
+
+    engine.activateQuestion(0);
+    const question = engine.getCurrentQuestion();
+    if (!question) throw new Error('No first question is configured');
+
+    const answerPromises = joinedClients.map(({ ws, id }) => new Promise((resolve) => {
+      const timeout = setTimeout(resolve, 1500);
       setTimeout(() => {
         if (ws.readyState === WebSocket.OPEN) {
-          const opt = Math.floor(Math.random() * 4);
-          ws.send(JSON.stringify({
-            type: 'SUBMIT_ANSWER',
-            questionId: q.id,
-            optionIndex: opt
-          }));
-
-          // Intentionally send a double-tap 20% of the time to verify idempotency at scale!
-          if (Math.random() < 0.2) {
+          const optionIndex = (id % 4);
+          ws.send(JSON.stringify({ type: 'SUBMIT_ANSWER', questionId: question.id, optionIndex }));
+          if (id % 5 === 0) {
             setTimeout(() => {
               if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                  type: 'SUBMIT_ANSWER',
-                  questionId: q.id,
-                  optionIndex: opt
-                }));
+                ws.send(JSON.stringify({ type: 'SUBMIT_ANSWER', questionId: question.id, optionIndex }));
               }
             }, 30);
           }
         }
         resolve();
-      }, delay);
-    });
-  });
+      }, 50 + Math.random() * 750);
+    }));
+    await Promise.all(answerPromises);
+    await delay(1800);
 
-  await Promise.all(answerPromises);
+    const expectedSubmissions = joinedClients.length;
+    const memMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
+    console.log(`Answer results ${answerResults}; accepted ${answersAccepted}; duplicate retries rejected ${duplicateRejections}`);
+    console.log(`Submissions ${engine.submissions.size}/${expectedSubmissions}; teams ${engine.teams.bit.playerCount}/${engine.teams.build.playerCount}`);
+    console.log(`Unlocked tiers ${engine.teams.bit.unlockedTiers.size}/${engine.teams.build.unlockedTiers.size}; RSS ${memMb} MB; errors ${errorsCount}`);
 
-  // Wait 1.5 seconds for all responses to settle
-  await new Promise(r => setTimeout(r, 1500));
-
-  console.log(`\n[4/4] Evaluating Results & Invariants:`);
-  console.log(`-----------------------------------------------`);
-  console.log(`🎯 Successful Atomic Answers Processed: ${answersSubmitted}`);
-  console.log(`🛡️ Double-Tap Submissions Blocked (Idempotency): ${duplicateRejections}`);
-  console.log(`🔴 Team Bit Score:   ${engine.teams.bit.score} PTS (${engine.teams.bit.playerCount} players)`);
-  console.log(`🔵 Team Build Score: ${engine.teams.build.score} PTS (${engine.teams.build.playerCount} players)`);
-  console.log(`🕷️ Team Bit Spider Unlocked Nodes:   ${engine.teams.bit.unlockedNodes.size}/48`);
-  console.log(`🕷️ Team Build Spider Unlocked Nodes: ${engine.teams.build.unlockedNodes.size}/48`);
-
-  const top5Bit = engine.getTopContributors('bit', 5);
-  console.log(`\n🏆 Team Bit Top 5 MVPs:`);
-  top5Bit.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
-
-  const top5Build = engine.getTopContributors('build', 5);
-  console.log(`\n🏆 Team Build Top 5 MVPs:`);
-  top5Build.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
-
-  // Check memory usage
-  const mem = process.memoryUsage();
-  console.log(`\n💾 Memory (RSS): ${(mem.rss / 1024 / 1024).toFixed(1)} MB (ultra-lightweight!)`);
-  console.log(`⚡ Errors/Crashes: ${errorsCount}`);
-
-  // Clean up
-  clients.forEach(c => c.ws.close());
-
-  if (errorsCount === 0 && answersSubmitted > 0) {
-    console.log(`\n🎉 LOAD TEST PASSED: Successfully handled ${TOTAL_CLIENTS} concurrent players!\n`);
-    process.exit(0);
-  } else {
-    console.error(`\n❌ LOAD TEST FAILED: Had ${errorsCount} errors.\n`);
-    process.exit(1);
+    const passed = connectedCount === TOTAL_CLIENTS && joinedCount === TOTAL_CLIENTS &&
+      answersAccepted === TOTAL_CLIENTS && engine.submissions.size === TOTAL_CLIENTS && errorsCount === 0;
+    if (!passed) throw new Error('Load test invariants failed');
+    console.log(`PASS: ${TOTAL_CLIENTS} concurrent players joined and submitted without errors.`);
+  } finally {
+    for (const { ws } of clients) {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) ws.close();
+    }
+    await delay(100);
+    if (server.listening) await new Promise((resolve) => server.close(resolve));
   }
 }
 
-// Allow server to spin up then run
-setTimeout(runLoadTest, 500);
+runLoadTest().catch((error) => {
+  console.error(`FAIL: ${error.message}`);
+  process.exitCode = 1;
+});

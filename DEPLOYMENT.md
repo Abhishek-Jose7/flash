@@ -24,7 +24,7 @@ If you have or sign up for DigitalOcean (which gives **$200 in free credits** on
    * **Resource Size:** Choose **Basic** (\$5/month — covered 100% by your \$200 free credits!).
    * **HTTP Port:** `3000`
    * **Environment Variables**:
-     * `ADMIN_KEY`: `spiderverse`
+     * `ADMIN_KEY`: a unique random secret with at least 32 characters
 6. Click **"Next" → "Create Resources"**.
 7. In ~2 minutes, your app is live at a URL like `https://spiderverse-flashmob-abcde.ondigitalocean.app`.
 
@@ -75,7 +75,7 @@ cd app
 
 # 3. Create your .env file with your custom domain
 echo "DOMAIN_NAME=live.yourdomain.com" > .env
-echo "ADMIN_KEY=spiderverse" >> .env
+printf 'ADMIN_KEY=%s\n' "$(openssl rand -hex 32)" >> .env
 
 # 4. Start everything!
 sudo docker compose up -d --build

@@ -35,6 +35,8 @@ test('Idempotency and double-tap prevention', () => {
   const res1 = engine.submitAnswer(player.id, q.id, q.correctIndex);
   assert.equal(res1.success, true, 'First submission should succeed');
   assert.equal(res1.isCorrect, true, 'Should be marked correct');
+  assert.ok(Number.isFinite(res1.timeElapsedMs), 'Response time is returned for the reveal screen');
+  assert.equal(engine.getPlayerState(player.id).playerAnswer.timeElapsedMs, res1.timeElapsedMs);
   const pointsAwarded = res1.points;
   assert.ok(pointsAwarded > 0, 'Points should be > 0');
   assert.equal(player.score, pointsAwarded, 'Player score updated');
@@ -59,9 +61,9 @@ test('Node unlock progression per team', () => {
   engine.submitAnswer(pBuild.id, q.id, (q.correctIndex + 1) % 4); // wrong answer
 
   assert.ok(engine.teams.bit.unlockedTiers.has(1), 'Team Bit should unlock Tier 1');
-  assert.ok(engine.teams.bit.unlockedNodes.size > 0, 'Team Bit has unlocked nodes');
+  assert.equal(engine.getPlayerBroadcast().teams.bit.percent, 10, 'Team Bit progress advances one tenth');
   assert.equal(engine.teams.build.unlockedTiers.has(1), false, 'Team Build should NOT unlock Tier 1');
-  assert.equal(engine.teams.build.unlockedNodes.size, 0, 'Team Build has 0 unlocked nodes');
+  assert.equal(engine.getPlayerBroadcast().teams.build.percent, 0, 'Team Build progress stays at zero');
 });
 
 test('Top-5 Contributor rank calculation', () => {
@@ -91,16 +93,14 @@ test('Top-5 Contributor rank calculation', () => {
   assert.ok(top5[1].score >= top5[2].score, 'Top 2 score >= Top 3 score');
 });
 
-test('Deterministic Victory Trigger after all 8 questions or tier 8 unlock', () => {
+test('Victory triggers after every configured question tier is unlocked', () => {
   const engine = new GameStateEngine();
-  const pBit = engine.registerPlayer('p_bit_champ', 'Champ', 'bit');
 
-  // Unlock all 8 tiers for Bit
-  for (let tier = 1; tier <= 8; tier++) {
+  for (let tier = 1; tier <= engine.questions.length; tier++) {
     engine.unlockTeamTier('bit', tier);
   }
 
-  assert.equal(engine.teams.bit.unlockedTiers.size, 8, 'Bit has all 8 tiers unlocked');
+  assert.equal(engine.teams.bit.unlockedTiers.size, engine.questions.length, 'Bit has every configured tier');
   assert.equal(engine.stage, 'VICTORY', 'Stage should be VICTORY');
   assert.equal(engine.winnerTeam, 'bit', 'Bit should be declared winner');
 });

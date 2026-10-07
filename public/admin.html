@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#E3212A">
   <title>Bit N Build — Host Console</title>
-  <link rel="stylesheet" href="/css/webhead.css?v=mobile7">
+  <link rel="stylesheet" href="/css/webhead.css?v=mobile10">
 </head>
 <body class="admin-page">
   <div class="page-grain" aria-hidden="true"></div>
@@ -36,13 +36,13 @@
         <header class="section-heading"><div><h2>GAME STATUS</h2></div><span id="admin-stage-badge" class="stage-badge">LOBBY</span></header>
         <div class="stat-grid">
           <article class="stat-tile"><small>CONNECTED SLINGERS</small><strong id="admin-players-count" class="stat-badge">0</strong></article>
-          <article class="stat-tile"><small>CURRENT ROUND</small><strong id="admin-q-index" class="stat-badge">1 / 8</strong></article>
+          <article class="stat-tile"><small>CURRENT ROUND</small><strong id="admin-q-index" class="stat-badge">1 / 10</strong></article>
           <article class="stat-tile"><small>COUNTDOWN / TIME</small><strong id="admin-timer-val" class="stat-badge">--</strong></article>
         </div>
         <div class="active-question"><small>ACTIVE QUESTION</small><strong id="admin-cur-q-text">None (In Lobby / Idle)</strong></div>
         <div class="admin-team-grid">
-          <article class="admin-team admin-team-bit"><div><span>TEAM BIT</span><small>MILES MORALES</small></div><strong id="admin-bit-stats">0 PTS | 0% Assembled | 0 Players</strong></article>
-          <article class="admin-team admin-team-build"><div><span>TEAM BUILD</span><small>SPIDER-GWEN</small></div><strong id="admin-build-stats">0 PTS | 0% Assembled | 0 Players</strong></article>
+          <article class="admin-team admin-team-bit"><div><span>TEAM BIT</span><small>MILES MORALES</small></div><strong id="admin-bit-stats">0 Correct Answers | 0% Assembled | 0 Players</strong></article>
+          <article class="admin-team admin-team-build"><div><span>TEAM BUILD</span><small>SPIDER-GWEN</small></div><strong id="admin-build-stats">0 Correct Answers | 0% Assembled | 0 Players</strong></article>
         </div>
       </section>
 
@@ -62,15 +62,15 @@
         <p>Set a team's progress to preview the projected spider build.</p>
         <div class="rehearsal-grid">
           <div class="tier-group tier-bit"><h3>TEAM BIT · MILES</h3><div class="tier-buttons">
-            <button class="admin-btn btn-test-tier" data-team="bit" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="7">07</button><button class="admin-btn btn-test-tier final-tier" data-team="bit" data-tier="8">08 / 100%</button>
+            <button class="admin-btn btn-test-tier" data-team="bit" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="7">07</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="8">08</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="9">09</button><button class="admin-btn btn-test-tier final-tier" data-team="bit" data-tier="10">10 / 100%</button>
           </div></div>
           <div class="tier-group tier-build"><h3>TEAM BUILD · GWEN</h3><div class="tier-buttons">
-            <button class="admin-btn btn-test-tier" data-team="build" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="7">07</button><button class="admin-btn btn-test-tier final-tier" data-team="build" data-tier="8">08 / 100%</button>
+            <button class="admin-btn btn-test-tier" data-team="build" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="7">07</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="8">08</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="9">09</button><button class="admin-btn btn-test-tier final-tier" data-team="build" data-tier="10">10 / 100%</button>
           </div></div>
         </div>
       </section>
     </section>
   </main>
-  <script type="module" src="/js/adminApp.js?v=mobile4"></script>
+  <script type="module" src="/js/adminApp.js?v=mobile5"></script>
 </body>
 </html>

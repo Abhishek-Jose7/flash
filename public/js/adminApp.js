@@ -126,6 +126,8 @@ class AdminApp {
         connStatus.textContent = 'ONLINE';
         connStatus.style.color = 'var(--orchid)';
       }
+      // Re-authenticate after reconnect so this console keeps receiving full state.
+      this.sendAction('AUTH');
     };
 
     this.ws.onmessage = (event) => {
@@ -210,13 +212,13 @@ class AdminApp {
       const bitStats = document.getElementById('admin-bit-stats');
       if (bitStats && state.teams.bit) {
         bitStats.textContent =
-          `${state.teams.bit.score.toLocaleString()} PTS | ${state.teams.bit.percent}% Built | ${state.teams.bit.playerCount} Players`;
+          `${state.teams.bit.score.toLocaleString()} Correct Answers | ${state.teams.bit.percent}% Built | ${state.teams.bit.playerCount} Players`;
       }
 
       const buildStats = document.getElementById('admin-build-stats');
       if (buildStats && state.teams.build) {
         buildStats.textContent =
-          `${state.teams.build.score.toLocaleString()} PTS | ${state.teams.build.percent}% Built | ${state.teams.build.playerCount} Players`;
+          `${state.teams.build.score.toLocaleString()} Correct Answers | ${state.teams.build.percent}% Built | ${state.teams.build.playerCount} Players`;
       }
     }
   }
