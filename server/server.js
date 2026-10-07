@@ -1,7 +1,9 @@
 import http from 'node:http';
 import path from 'node:path';
+import { timingSafeEqual, randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import compression from 'compression';
 import { WebSocketServer, WebSocket } from 'ws';
 import QRCode from 'qrcode';
 import { GameStateEngine } from './gameState.js';
@@ -20,7 +22,27 @@ if (process.env.NODE_ENV === 'production' && ADMIN_PASSKEY.length < 32) {
   throw new Error('ADMIN_KEY must be at least 32 characters in production.');
 }
 const MAX_CONNECTIONS = Number.parseInt(process.env.MAX_CONNECTIONS || '1000', 10);
+const MAX_PLAYERS = Number.parseInt(process.env.MAX_PLAYERS || '1000', 10);
 const MAX_BUFFERED_BYTES = 256 * 1024;
+const PUBLIC_URL = process.env.PUBLIC_URL; // optional canonical URL for the QR code (else derived from Host)
+
+// Constant-time compare so the admin key can't be recovered by timing.
+const isAdminKey = (v) => {
+  if (typeof v !== 'string') return false;
+  const a = Buffer.from(v);
+  const b = Buffer.from(ADMIN_PASSKEY);
+  return a.length === b.length && timingSafeEqual(a, b);
+};
+
+// Login swaps the admin key for a random 12h session token, so the key itself never
+// sits in browser storage or on the WebSocket. ponytail: in-memory, a restart forces re-login.
+const adminSessions = new Map(); // token -> expiry ms
+const isAdminSession = (t) => typeof t === 'string' && (adminSessions.get(t) ?? 0) > Date.now();
+
+// Last X-Forwarded-For hop is the one appended by our own proxy (Caddy / Cloud Run);
+// earlier hops are client-controlled and spoofable.
+const clientIp = (req) =>
+  req.headers['x-forwarded-for']?.split(',').at(-1).trim() || req.socket.remoteAddress || 'unknown';
 
 const app = express();
 const server = http.createServer(app);
@@ -32,7 +54,7 @@ const connectionLimiter = new RateLimiter({ maxTokens: 800, refillRate: 200, max
 const messageLimiter = new RateLimiter({ maxTokens: 25, refillRate: 10, maxPayloadBytes: 2048 });
 const adminLoginLimiter = new RateLimiter({ maxTokens: 10, refillRate: 10 / 60, maxPayloadBytes: 8192 });
 
-// Connection tracking: ws -> { playerId, ip, isAlive, lastActive, role }
+// Connection tracking: ws -> { playerId, ip, isAlive, lastActive }
 const clients = new Map();
 
 /**
@@ -59,24 +81,26 @@ function safeSend(ws, data) {
 
 // Enable proxy trusting for Caddy, AWS ELB, and Cloudflare reverse proxies
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use(compression()); // Cloud Run / bare Node don't compress; Caddy does it in compose
 app.use(express.json({ limit: '8kb' }));
 
 // --- HTTP Middleware & Static File Streaming ---
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'same-origin');
   next();
 });
 
 // Cache control for static assets (instant mobile loads)
 app.use(express.static(PUBLIC_DIR, {
-  maxAge: '1h',
+  maxAge: '1d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache'); // HTML always fresh
-    } else {
-      res.setHeader('Cache-Control', 'public, max-age=86400, immutable'); // CSS, JS cached
+    } else if (/\.(js|css)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=300'); // unhashed names: let deploys land fast
     }
   }
 }));
@@ -104,7 +128,7 @@ app.get('/api/qr', async (req, res) => {
   try {
     const host = req.headers.host || `localhost:${PORT}`;
     const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
-    const targetUrl = `${protocol}://${host}/`;
+    const targetUrl = PUBLIC_URL || `${protocol}://${host}/`;
     const svg = await QRCode.toString(targetUrl, {
       type: 'svg',
       color: {
@@ -114,7 +138,7 @@ app.get('/api/qr', async (req, res) => {
       margin: 1
     });
     res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.setHeader('Cache-Control', 'private, max-age=60'); // Host-derived: never share via CDN
     res.send(svg);
   } catch (err) {
     res.status(500).send('Error generating QR');
@@ -123,12 +147,14 @@ app.get('/api/qr', async (req, res) => {
 
 // Admin Authentication API
 app.post('/api/admin/login', (req, res) => {
-  if (!adminLoginLimiter.isAllowed(req.ip || req.socket.remoteAddress || 'unknown')) {
+  if (!adminLoginLimiter.isAllowed(clientIp(req))) {
     return res.status(429).json({ success: false, message: 'Too many login attempts. Try again shortly.' });
   }
   const { username, password } = req.body || {};
-  if (username === 'admin' && password === ADMIN_PASSKEY) {
-    return res.json({ success: true, token: ADMIN_PASSKEY });
+  if (username === 'admin' && isAdminKey(password)) {
+    const token = randomBytes(24).toString('hex');
+    adminSessions.set(token, Date.now() + 12 * 3600 * 1000);
+    return res.json({ success: true, token });
   }
   return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
 });
@@ -140,9 +166,6 @@ const BROADCAST_THROTTLE_MS = 200; // Max ~5 updates/sec (was 60ms / 16/sec)
 
 // Pre-serialized broadcast cache — avoids re-serializing identical payloads
 let lastPlayerJson = '';
-let lastStateVersion = -1;
-// Track whether only the timer changed (countdown/remaining) for ultra-slim tick
-let lastTimerOnlyHash = '';
 
 function requestBroadcast() {
   const now = Date.now();
@@ -170,29 +193,7 @@ function executeBroadcast() {
   }
   lastPlayerJson = playerJson;
 
-  // Only build the full graph payload when the host console is connected.
-  let fullJson = null;
-  let hasAdminClients = false;
-  for (const [, meta] of clients) {
-    if (meta.role === 'admin') {
-      hasAdminClients = true;
-      break;
-    }
-  }
-
-  if (hasAdminClients) {
-    const adminState = engine.getStageBroadcast();
-    fullJson = JSON.stringify({ type: 'STATE_UPDATE', state: adminState });
-  }
-
-  // Single-pass broadcast with role-aware payload selection
-  for (const [ws, meta] of clients.entries()) {
-    if (meta.role === 'admin') {
-      safeSend(ws, fullJson || playerJson);
-    } else {
-      safeSend(ws, playerJson);
-    }
-  }
+  for (const ws of clients.keys()) safeSend(ws, playerJson);
 }
 
 // --- Live Timer Ticker Loop (1Hz for stage/questions) ---
@@ -228,7 +229,7 @@ startTicker();
 
 // --- WebSocket Event Handling ---
 wss.on('connection', (ws, req) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const ip = clientIp(req);
 
   if (clients.size >= MAX_CONNECTIONS || !connectionLimiter.isAllowed(ip)) {
     ws.close(1008, 'RATE_LIMIT_EXCEEDED');
@@ -237,18 +238,12 @@ wss.on('connection', (ws, req) => {
 
   const socketId = 'sock_' + Math.random().toString(36).substring(2, 9);
 
-  // Detect the host console from the URL path or Referer header.
-  const referer = req.headers.referer || '';
-  const urlPath = req.url || '';
-  const role = urlPath.includes('/admin') || referer.includes('/admin') ? 'admin' : 'player';
-
   const clientMeta = {
     socketId,
     playerId: null,
     ip,
     isAlive: true,
-    lastActive: Date.now(),
-    role
+    lastActive: Date.now()
   };
   clients.set(ws, clientMeta);
 
@@ -258,20 +253,7 @@ wss.on('connection', (ws, req) => {
     clientMeta.lastActive = Date.now();
   });
 
-  // Send immediate initial state — role-aware
-  if (role === 'admin') {
-    // The host console gets full state + graph data.
-    safeSend(ws, JSON.stringify({
-      type: 'INIT',
-      state: engine.getStageBroadcast()
-    }));
-  } else {
-    // Players get slim state only — no graph data (they don't need node/edge arrays)
-    safeSend(ws, JSON.stringify({
-      type: 'INIT',
-      state: engine.getPlayerBroadcast()
-    }));
-  }
+  safeSend(ws, JSON.stringify({ type: 'INIT', state: engine.getPlayerBroadcast() }));
 
   ws.on('message', (raw) => {
     if (!messageLimiter.validatePayload(raw) || !messageLimiter.isAllowed(clientMeta.socketId)) {
@@ -286,7 +268,13 @@ wss.on('connection', (ws, req) => {
       switch (msg.type) {
         case 'JOIN': {
           const { playerId, nickname } = msg;
-          if (!playerId || typeof playerId !== 'string') return;
+          // Bounded id, one identity per socket, capped roster: stops memory-stuffing via fake joins.
+          if (typeof playerId !== 'string' || !playerId || playerId.length > 64) return;
+          if (clientMeta.playerId && clientMeta.playerId !== playerId) return;
+          if (!engine.players.has(playerId) && engine.players.size >= MAX_PLAYERS) {
+            safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'GAME_FULL' }));
+            return;
+          }
 
           clientMeta.playerId = playerId;
           const player = engine.registerPlayer(playerId, nickname);
@@ -322,20 +310,11 @@ wss.on('connection', (ws, req) => {
         }
 
         case 'ADMIN_ACTION': {
-          if (msg.passkey !== ADMIN_PASSKEY) {
+          if (!isAdminSession(msg.passkey)) {
             safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'UNAUTHORIZED' }));
             return;
           }
 
-          // Mark this client as admin role if it wasn't detected from URL
-          const wasAdmin = clientMeta.role === 'admin';
-          clientMeta.role = 'admin';
-          if (!wasAdmin) {
-            safeSend(ws, JSON.stringify({
-              type: 'INIT',
-              state: engine.getStageBroadcast()
-            }));
-          }
           handleAdminAction(msg.action, msg.payload, ws);
           break;
         }
@@ -404,6 +383,12 @@ function handleAdminAction(action, payload, adminWs) {
   safeSend(adminWs, JSON.stringify({ type: 'ADMIN_OK', action }));
 }
 
+// Drop expired admin sessions
+setInterval(() => {
+  const now = Date.now();
+  for (const [t, exp] of adminSessions) if (exp <= now) adminSessions.delete(t);
+}, 600000).unref();
+
 // Dead connection reaper (runs every 15 seconds)
 setInterval(() => {
   for (const [ws, meta] of clients.entries()) {
@@ -418,6 +403,10 @@ setInterval(() => {
 }, 15000).unref();
 
 // Server launch with 1024 backlog queue for high-concurrency bursts
+// Outlive Cloud Run / ELB idle timeouts (60s) so keep-alive sockets aren't reset mid-request.
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+
 server.listen({ port: PORT, backlog: 1024 }, () => {
   console.log(`\n🕷️ ========================================`);
   console.log(`🕷️ BIT N BUILD GAME SERVER LIVE!`);
@@ -427,5 +416,14 @@ server.listen({ port: PORT, backlog: 1024 }, () => {
   console.log(`🕷️ Health Check:     http://localhost:${PORT}/health`);
   console.log(`🕷️ ========================================\n`);
 });
+
+// Cloud Run / Docker send SIGTERM on deploy: tell clients to reconnect (1001) and exit cleanly.
+process.on('SIGTERM', () => {
+  for (const ws of clients.keys()) ws.close(1001, 'SERVER_RESTART');
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 5000).unref();
+});
+process.on('uncaughtException', (err) => console.error('uncaughtException:', err));
+process.on('unhandledRejection', (err) => console.error('unhandledRejection:', err));
 
 export { app, server, engine };

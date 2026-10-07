@@ -86,7 +86,7 @@ export class GameStateEngine {
         'Kernel-Panic', 'Async-Spidey', 'Neon-Byte', 'Null-Pointer'
       ];
       const randomSuffix = Math.floor(10 + Math.random() * 90);
-      const cleanNick = (nickname && nickname.trim().slice(0, 16)) ||
+      const cleanNick = (typeof nickname === 'string' && nickname.trim().slice(0, 16)) ||
         `${spiderHandles[Math.floor(Math.random() * spiderHandles.length)]}-${randomSuffix}`;
 
       player = {
@@ -103,7 +103,7 @@ export class GameStateEngine {
       this.players.set(playerId, player);
       this.teams[teamId].playerCount++;
       this._bumpVersion();
-    } else if (nickname && nickname.trim()) {
+    } else if (typeof nickname === 'string' && nickname.trim()) {
       player.nickname = nickname.trim().slice(0, 16);
     }
 
@@ -146,6 +146,10 @@ export class GameStateEngine {
     const currentQ = this.getCurrentQuestion();
     if (!currentQ || currentQ.id !== questionId) {
       return { success: false, reason: 'QUESTION_MISMATCH' };
+    }
+
+    if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= currentQ.options.length) {
+      return { success: false, reason: 'INVALID_OPTION' };
     }
 
     const player = this.players.get(playerId);
@@ -304,7 +308,7 @@ export class GameStateEngine {
       buildCorrect: 0
     };
 
-    for (const [key, sub] of this.submissions.entries()) {
+    for (const sub of this.submissions.values()) {
       if (sub.questionId === currentQ.id) {
         stats.totalResponses++;
         if (sub.optionIndex >= 0 && sub.optionIndex < 4) {
@@ -346,13 +350,6 @@ export class GameStateEngine {
         percent: Math.min(100, Math.round((this.teams.build.unlockedTiers.size / this.questions.length) * 100))
       }
     };
-  }
-
-  /**
-   * Full team data with unlocked node/edge arrays — only for the host console.
-   */
-  _getFullTeams() {
-    return this._getSlimTeams();
   }
 
   /**
@@ -414,23 +411,6 @@ export class GameStateEngine {
     const state = this._getBaseState();
     state.teams = this._getSlimTeams();
     return state;
-  }
-
-  /**
-   * Full broadcast for the host console (~600-800 bytes).
-   * Includes the full unlocked graph arrays needed for canvas rendering
-   */
-  getStageBroadcast() {
-    const state = this._getBaseState();
-    state.teams = this._getFullTeams();
-    return state;
-  }
-
-  /**
-   * Legacy compatibility: getBroadcastState returns full state (used by tests)
-   */
-  getBroadcastState() {
-    return this.getStageBroadcast();
   }
 
   /**

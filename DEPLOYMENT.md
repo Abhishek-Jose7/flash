@@ -6,6 +6,27 @@ Because your QR code is physically printed, the server must **never go to sleep*
 
 ---
 
+## ☁️ Google Cloud Run (recommended for 500+ players)
+
+Game state lives in process memory, so the service **must run as exactly one instance that is never CPU-throttled** (the 1 Hz game ticker runs between requests).
+
+```bash
+printf '%s' "$(openssl rand -hex 24)" | gcloud secrets create bitnbuild-admin-key --data-file=-
+gcloud run deploy bitnbuild --source . --region <region> --allow-unauthenticated \
+  --min-instances=1 --max-instances=1 --no-cpu-throttling \
+  --concurrency=1000 --timeout=3600 --cpu=1 --memory=512Mi \
+  --set-secrets=ADMIN_KEY=bitnbuild-admin-key:latest \
+  --set-env-vars=PUBLIC_URL=https://<your-domain>/
+```
+
+* `max-instances=1` — a 2nd instance would have its own empty game (split-brain). Don't raise it without moving state to Redis.
+* `timeout=3600` — Cloud Run's max WebSocket lifetime; clients auto-reconnect (jittered) and re-join.
+* Cloud Run terminates TLS, honours `PORT`, and sends `SIGTERM` on deploy (handled: clients are told to reconnect).
+* Deploying mid-event resets the game. Deploy before doors open.
+* Load-test first: `CLIENTS=500 npm run test:load`.
+
+---
+
 ## 🏆 PATH 1: DigitalOcean App Platform (Easiest — 3-Minute GUI Setup)
 
 If you have or sign up for DigitalOcean (which gives **$200 in free credits** on new signups or via GitHub Student Pack), this is the simplest method because it requires **no terminal commands on a server**.

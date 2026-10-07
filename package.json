@@ -10,6 +10,7 @@
     "test:load": "node tests/loadTest.js"
   },
   "dependencies": {
+    "compression": "^1.8.2",
     "express": "^4.21.2",
     "qrcode": "^1.5.4",
     "ws": "^8.18.0"

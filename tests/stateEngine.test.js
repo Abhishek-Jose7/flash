@@ -98,3 +98,14 @@ test('Victory triggers after every configured question tier is unlocked', () => 
   assert.equal(engine.stage, 'VICTORY', 'Stage should be VICTORY');
   assert.equal(engine.winnerTeam, 'bit', 'Bit should be declared winner');
 });
+
+test('Rejects malformed answers and non-string nicknames', () => {
+  const engine = new GameStateEngine();
+  const p = engine.registerPlayer('p_bad', { evil: true });
+  assert.ok(p.nickname.length > 0, 'Non-string nickname falls back to a generated handle');
+  engine.activateQuestion(0);
+  const q = engine.getCurrentQuestion();
+  for (const bad of [-1, 99, 1.5, '0', null]) {
+    assert.equal(engine.submitAnswer(p.id, q.id, bad).reason, 'INVALID_OPTION');
+  }
+});

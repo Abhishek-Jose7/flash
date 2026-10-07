@@ -146,7 +146,7 @@ class PlayerApp {
       }
       const topConn = document.getElementById('top-conn-status');
       if (topConn) { topConn.textContent = '[OFFLINE]'; topConn.style.color = '#fa5252'; }
-      setTimeout(() => this.connectWebSocket(), 1500);
+      setTimeout(() => this.connectWebSocket(), 1000 + Math.random() * 4000);
     };
 
     this.ws.onerror = (err) => {

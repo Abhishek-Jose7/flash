@@ -157,7 +157,7 @@ class AdminApp {
         connStatus.style.color = 'var(--blush)';
       }
       if (this.adminToken) {
-        setTimeout(() => this.connectWebSocket(), 1500);
+        setTimeout(() => this.connectWebSocket(), 1000 + Math.random() * 4000);
       }
     };
   }
