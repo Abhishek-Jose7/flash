@@ -1,102 +1,62 @@
 [
   {
-    "id": 1,
-    "difficulty": "EASY",
-    "category": "TECH BASICS",
-    "question": "What does 'WWW' stand for in a website address?",
-    "options": ["World Wide Web", "Wild Wild West", "Web World Wide", "World Web Warp"],
-    "correctIndex": 0,
-    "timeLimitSec": 15,
-    "spiderPart": "Spider Body Base"
+    "id": "q1",
+    "question": "What is Peter Parker's main superpower?",
+    "options": ["Flying", "Wall-crawling", "Invisibility", "Teleportation"],
+    "correctIndex": 1
   },
   {
-    "id": 2,
-    "difficulty": "EASY",
-    "category": "HARDWARE",
-    "question": "Which of these is considered the 'brain' of the computer?",
-    "options": ["GPU", "RAM", "CPU", "SSD"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "Spider Head & Eyes"
+    "id": "q2",
+    "question": "Which tech company created the React framework?",
+    "options": ["Google", "Facebook", "Microsoft", "Twitter"],
+    "correctIndex": 1
   },
   {
-    "id": 3,
-    "difficulty": "MEDIUM",
-    "category": "PYTHON",
-    "question": "In Python, which keyword is used to define a function?",
-    "options": ["func", "def", "function", "define"],
-    "correctIndex": 1,
-    "timeLimitSec": 15,
-    "spiderPart": "Upper Left Leg"
+    "id": "q3",
+    "question": "What powers Miles Morales' 'Venom Strike'?",
+    "options": ["Symbiote suit", "Bio-electricity", "Radioactive blood", "Stark Tech"],
+    "correctIndex": 1
   },
   {
-    "id": 4,
-    "difficulty": "MEDIUM",
-    "category": "GIT",
-    "question": "Which Git command creates a new branch AND immediately switches to it?",
-    "options": ["git branch -new <name>", "git checkout -b <name>", "git switch --make <name>", "git create <name>"],
-    "correctIndex": 1,
-    "timeLimitSec": 15,
-    "spiderPart": "Upper Right Leg"
+    "id": "q4",
+    "question": "What does API stand for?",
+    "options": ["Application Programming Interface", "Advanced Program Integration", "Apple Protocol Interface", "Automated Process Identifier"],
+    "correctIndex": 0
   },
   {
-    "id": 5,
-    "difficulty": "MEDIUM",
-    "category": "CYBER SECURITY",
-    "question": "Which attack occurs when malicious user input is directly concatenated into a backend database query?",
-    "options": ["Cross-Site Scripting (XSS)", "SQL Injection (SQLi)", "Man-in-the-Middle (MitM)", "Buffer Overflow"],
-    "correctIndex": 1,
-    "timeLimitSec": 15,
-    "spiderPart": "Middle Left Leg"
+    "id": "q5",
+    "question": "Who created Spider-Man's Iron Spider suit?",
+    "options": ["Reed Richards", "Otto Octavius", "Tony Stark", "Norman Osborn"],
+    "correctIndex": 2
   },
   {
-    "id": 6,
-    "difficulty": "MEDIUM",
-    "category": "WEB DEV",
-    "question": "What does CSS stand for in web development?",
-    "options": ["Computer Style Sheets", "Creative Styling System", "Cascading Style Sheets", "Central Sheet Styles"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "Middle Right Leg"
+    "id": "q6",
+    "question": "What does JSON stand for?",
+    "options": ["Java Standard Object Notation", "JavaScript Object Notation", "Just Some Object Notation", "JavasScript Oriented Networking"],
+    "correctIndex": 1
   },
   {
-    "id": 7,
-    "difficulty": "HARD",
-    "category": "ALGORITHMS",
-    "question": "What is the average time complexity of searching a key in a Hash Map?",
-    "options": ["O(log n)", "O(n)", "O(1)", "O(n²)"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "Lower Left Leg"
+    "id": "q7",
+    "question": "What is the name of the newspaper Peter Parker works for?",
+    "options": ["The Daily Planet", "The New York Times", "The Daily Bugle", "The Daily Globe"],
+    "correctIndex": 2
   },
   {
-    "id": 8,
-    "difficulty": "HARD",
-    "category": "DATA STRUCTURES",
-    "question": "Which data structure operates strictly on the LIFO (Last In, First Out) principle?",
-    "options": ["Queue", "Binary Tree", "Stack", "Linked List"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "Lower Right Leg"
+    "id": "q8",
+    "question": "Which HTML tag is used for linking external CSS files?",
+    "options": ["<css>", "<script>", "<link>", "<style>"],
+    "correctIndex": 2
   },
   {
-    "id": 9,
-    "difficulty": "HARD",
-    "category": "NETWORKING",
-    "question": "What port is typically used for secure HTTPS traffic?",
-    "options": ["80", "443", "22", "21"],
-    "correctIndex": 1,
-    "timeLimitSec": 15,
-    "spiderPart": "Bottom Left Leg"
+    "id": "q9",
+    "question": "Who is Spider-Man 2099?",
+    "options": ["Miguel O'Hara", "Ben Reilly", "Miles Morales", "Peter Porker"],
+    "correctIndex": 0
   },
   {
-    "id": 10,
-    "difficulty": "BOSS ROUND",
-    "category": "JAVASCRIPT",
-    "question": "In JavaScript, what does `typeof NaN` evaluate to?",
-    "options": ["'undefined'", "'NaN'", "'number'", "'object'"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
-    "spiderPart": "AMAZING SPIDER-MAN 100% ASSEMBLED"
+    "id": "q10",
+    "question": "What HTTP status code represents 'Not Found'?",
+    "options": ["200", "500", "403", "404"],
+    "correctIndex": 3
   }
 ]

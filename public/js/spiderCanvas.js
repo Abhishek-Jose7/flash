@@ -155,7 +155,7 @@ export class SpiderCanvasRenderer {
           ctx.clip();
           
           ctx.globalAlpha = opacity;
-          ctx.filter = 'brightness(0.3)';
+          ctx.filter = 'brightness(0.0)';
           ctx.drawImage(this.img, 0, 0, 48, 65);
           ctx.restore();
         }

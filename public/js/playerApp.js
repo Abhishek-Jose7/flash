@@ -48,6 +48,30 @@ class PlayerApp {
     return id;
   }
 
+  playCorrectSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!this.audioCtx) this.audioCtx = new AudioCtx();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+      
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, this.audioCtx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(1760, this.audioCtx.currentTime + 0.1); // A6
+      
+      gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.3);
+      
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.3);
+    } catch (e) { console.warn('Audio play failed', e); }
+  }
+
   initCanvas() {
     const canvas = document.getElementById('mobile-spider-canvas');
     if (canvas) {
@@ -599,6 +623,10 @@ class PlayerApp {
 
         if (state.playerAnswer) {
           if (state.playerAnswer.isCorrect) {
+            if (this.lastRevealIndex !== state.qIndex) {
+              this.lastRevealIndex = state.qIndex;
+              this.playCorrectSound();
+            }
             if (resBox) resBox.className = 'reveal-card correct';
             if (resTitle) {
               resTitle.textContent = 'CORRECT';

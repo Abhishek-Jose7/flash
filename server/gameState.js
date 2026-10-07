@@ -13,7 +13,7 @@ export class GameStateEngine {
     this.questionDurationSec = 15;
     this.revealStartTime = 0;
     this.revealDurationSec = 2;
-    this.countdownSeconds = 3;
+    this.countdownSeconds = 10;
     this.winnerTeam = null;
 
     // Two Teams: Team Bit red and Team Build blue.
@@ -119,7 +119,7 @@ export class GameStateEngine {
 
   startCountdown() {
     this.stage = 'COUNTDOWN';
-    this.countdownSeconds = 3;
+    this.countdownSeconds = 10;
     this._bumpVersion();
     return this.stage;
   }
