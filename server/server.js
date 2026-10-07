@@ -8,6 +8,16 @@ import { GameStateEngine } from './gameState.js';
 import { RateLimiter } from './rateLimiter.js';
 import { SPIDER_NODES, SPIDER_EDGES } from './spiderGraphData.js';
 
+// --- PROCESS-LEVEL CRASH GUARDS ---
+// Without these, a single unhandled throw (e.g. ws.send on a closing socket)
+// kills the entire Node process mid-event with 300 people connected.
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL GUARD] Uncaught exception caught — server stays alive:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL GUARD] Unhandled rejection caught — server stays alive:', reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
@@ -26,6 +36,22 @@ const messageLimiter = new RateLimiter({ maxTokens: 25, refillRate: 10, maxPaylo
 
 // Connection tracking: ws -> { playerId, ip, isAlive, lastActive, role }
 const clients = new Map();
+
+/**
+ * Safe send — wraps ws.send in try/catch so a socket transitioning
+ * to CLOSING between the readyState check and the actual send
+ * doesn't throw and crash the broadcast loop or the process.
+ */
+function safeSend(ws, data) {
+  try {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(data);
+    }
+  } catch (e) {
+    // Socket died between check and send — silently discard.
+    // The dead-connection reaper will clean it up within 15s.
+  }
+}
 
 // Enable proxy trusting for Caddy, AWS ELB, and Cloudflare reverse proxies
 app.set('trust proxy', 1);
@@ -167,12 +193,10 @@ function executeBroadcast() {
 
   // Single-pass broadcast with role-aware payload selection
   for (const [ws, meta] of clients.entries()) {
-    if (ws.readyState === WebSocket.OPEN) {
-      if (meta.role === 'stage' || meta.role === 'admin') {
-        ws.send(stageJson || playerJson);
-      } else {
-        ws.send(playerJson);
-      }
+    if (meta.role === 'stage' || meta.role === 'admin') {
+      safeSend(ws, stageJson || playerJson);
+    } else {
+      safeSend(ws, playerJson);
     }
   }
 }
@@ -245,14 +269,14 @@ wss.on('connection', (ws, req) => {
   // Send immediate initial state — role-aware
   if (role === 'stage' || role === 'admin') {
     // Stage & admin get full state + graph data
-    ws.send(JSON.stringify({
+    safeSend(ws, JSON.stringify({
       type: 'INIT',
       graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
       state: engine.getStageBroadcast()
     }));
   } else {
     // Players get slim state only — no graph data (they don't need node/edge arrays)
-    ws.send(JSON.stringify({
+    safeSend(ws, JSON.stringify({
       type: 'INIT',
       state: engine.getPlayerBroadcast()
     }));
@@ -260,7 +284,7 @@ wss.on('connection', (ws, req) => {
 
   ws.on('message', (raw) => {
     if (!messageLimiter.validatePayload(raw) || !messageLimiter.isAllowed(clientMeta.socketId)) {
-      ws.send(JSON.stringify({ type: 'ERROR', code: 'RATE_LIMIT' }));
+      safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'RATE_LIMIT' }));
       return;
     }
 
@@ -276,7 +300,7 @@ wss.on('connection', (ws, req) => {
           clientMeta.playerId = playerId;
           const player = engine.registerPlayer(playerId, nickname, preferredTeam);
 
-          ws.send(JSON.stringify({
+          safeSend(ws, JSON.stringify({
             type: 'JOINED',
             player,
             state: engine.getPlayerState(playerId)
@@ -288,14 +312,14 @@ wss.on('connection', (ws, req) => {
 
         case 'SUBMIT_ANSWER': {
           if (!clientMeta.playerId) {
-            ws.send(JSON.stringify({ type: 'ERROR', code: 'UNREGISTERED' }));
+            safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'UNREGISTERED' }));
             return;
           }
 
           const { questionId, optionIndex } = msg;
           const result = engine.submitAnswer(clientMeta.playerId, questionId, optionIndex);
 
-          ws.send(JSON.stringify({
+          safeSend(ws, JSON.stringify({
             type: 'ANSWER_RESULT',
             result,
             playerState: engine.getPlayerState(clientMeta.playerId)
@@ -308,7 +332,7 @@ wss.on('connection', (ws, req) => {
 
         case 'ADMIN_ACTION': {
           if (msg.passkey !== ADMIN_PASSKEY && msg.passkey !== 'spiderverse') {
-            ws.send(JSON.stringify({ type: 'ERROR', code: 'UNAUTHORIZED' }));
+            safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'UNAUTHORIZED' }));
             return;
           }
 
@@ -319,7 +343,7 @@ wss.on('connection', (ws, req) => {
         }
 
         case 'PING': {
-          ws.send(JSON.stringify({ type: 'PONG', timestamp: Date.now() }));
+          safeSend(ws, JSON.stringify({ type: 'PONG', timestamp: Date.now() }));
           break;
         }
 
@@ -380,18 +404,18 @@ function handleAdminAction(action, payload, adminWs) {
   }
 
   requestBroadcast();
-  adminWs.send(JSON.stringify({ type: 'ADMIN_OK', action }));
+  safeSend(adminWs, JSON.stringify({ type: 'ADMIN_OK', action }));
 }
 
 // Dead connection reaper (runs every 15 seconds)
 setInterval(() => {
   for (const [ws, meta] of clients.entries()) {
     if (!meta.isAlive) {
-      ws.terminate();
+      try { ws.terminate(); } catch (_) { /* already dead */ }
       clients.delete(ws);
     } else {
       meta.isAlive = false;
-      ws.ping();
+      try { ws.ping(); } catch (_) { clients.delete(ws); }
     }
   }
 }, 15000).unref();
