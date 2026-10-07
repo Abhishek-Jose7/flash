@@ -68,12 +68,11 @@ app.use((req, res, next) => {
 
 // Cache control for static assets (instant mobile loads)
 app.use(express.static(PUBLIC_DIR, {
-  maxAge: '1h',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache'); // HTML always fresh
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     } else {
-      res.setHeader('Cache-Control', 'public, max-age=86400, immutable'); // CSS, JS cached
+      res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
     }
   }
 }));
