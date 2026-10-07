@@ -2,254 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Spider-Verse Flashmob | Host Admin</title>
-  <link rel="stylesheet" href="/css/spiderverse.css">
-  <style>
-    .admin-container {
-      max-width: 850px;
-      margin: 0 auto;
-      padding: 16px;
-      position: relative;
-      z-index: 10;
-    }
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 600px) {
-      .admin-grid { grid-template-columns: 1fr; }
-    }
-    .admin-btn {
-      background: #191226;
-      border: 2px solid #554477;
-      color: #fff;
-      font-family: var(--font-tech);
-      font-weight: 700;
-      font-size: 15px;
-      padding: 14px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-      box-shadow: 0 4px 0 #0c0814;
-    }
-    .admin-btn:hover {
-      background: #271c3d;
-      border-color: var(--bit-cyan);
-    }
-    .admin-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #0c0814;
-    }
-    .admin-btn.primary {
-      background: linear-gradient(135deg, #00ff66, #009933);
-      color: #000;
-      font-family: var(--font-comic);
-      font-size: 18px;
-      letter-spacing: 1px;
-      border: none;
-      box-shadow: 0 4px 0 #00591f, 0 0 20px rgba(0, 255, 102, 0.4);
-    }
-    .admin-btn.danger {
-      border-color: #ff003b;
-      color: #ff003b;
-    }
-    .admin-btn.danger:hover {
-      background: #ff003b;
-      color: #fff;
-    }
-    .stat-badge {
-      font-family: var(--font-comic);
-      font-size: 22px;
-      color: #ffd700;
-    }
-    .login-box {
-      max-width: 420px;
-      margin: 60px auto 0;
-      background: var(--bg-card);
-      border: 2.5px solid var(--bit-cyan);
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#E3212A">
+  <title>Bit N Build — Host Console</title>
+  <link rel="stylesheet" href="/css/webhead.css?v=mobile7">
 </head>
-<body>
-  <div class="halftone-bg"></div>
-  <div class="vignette-overlay"></div>
-
-  <div class="admin-container">
-    <!-- 1. LOGIN SCREEN (WHEN NOT AUTHENTICATED) -->
-    <div id="admin-login-section" class="login-box">
-      <div style="font-size: 12px; color: #ffcc00; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 6px;">
-        ⚡ SPIDER-VERSE FLASHMOB ⚡
-      </div>
-      <h1 class="chromatic-text" style="font-size: 26px; margin-bottom: 6px;">HOST ADMIN LOGIN</h1>
-      <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">
-        Sign in to control questions, rounds, and trigger the live Spider-Man assembly.
-      </p>
-
-      <form id="form-login" onsubmit="return false;">
-        <div style="margin-bottom: 12px; text-align: left;">
-          <label style="font-size: 11px; color: #bbb; text-transform: uppercase; font-weight: 700;">Username</label>
-          <input id="login-username" type="text" value="admin" autocomplete="username"
-                 class="admin-input" style="margin-top: 4px; width: 100%; padding: 12px; background: rgba(0,0,0,0.6); border: 1.5px solid #443366; border-radius: 8px; color: #fff; font-size: 14px; outline: none;">
-        </div>
-
-        <div style="margin-bottom: 16px; text-align: left;">
-          <label style="font-size: 11px; color: #bbb; text-transform: uppercase; font-weight: 700;">Password</label>
-          <input id="login-password" type="password" placeholder="ENTER ADMIN PASSWORD" autocomplete="current-password"
-                 class="admin-input" style="margin-top: 4px; width: 100%; padding: 12px; background: rgba(0,0,0,0.6); border: 1.5px solid #443366; border-radius: 8px; color: #fff; font-size: 14px; outline: none;">
-        </div>
-
-        <div id="login-error-msg" style="display: none; color: #ff003b; font-size: 12px; font-weight: 700; margin-bottom: 12px;"></div>
-
-        <button id="btn-do-login" class="spider-btn" style="width: 100%;">
-          ⚡ LOGIN TO HOST CONSOLE
-        </button>
+<body class="admin-page">
+  <div class="page-grain" aria-hidden="true"></div>
+  <main class="admin-container">
+    <section id="admin-login-section" class="login-box">
+      <a class="brand admin-brand" href="/"><img src="/img/spider-emblem.svg" alt=""><span>BIT N BUILD</span></a>
+      <p class="eyebrow"><span>CONTROL ROOM</span> · HOST ACCESS</p>
+      <h1>HOST CONSOLE</h1>
+      <p class="login-copy">Run the rounds, reveal answers, and steer the live arena.</p>
+      <form id="form-login" class="login-form" onsubmit="return false;">
+        <label for="login-username">USERNAME</label>
+        <input id="login-username" type="text" value="admin" autocomplete="username" class="admin-input">
+        <label for="login-password">PASSWORD</label>
+        <input id="login-password" type="password" placeholder="Enter host password" autocomplete="current-password" class="admin-input">
+        <div id="login-error-msg" class="login-error"></div>
+        <button id="btn-do-login" class="spider-btn">OPEN HOST CONSOLE <span>↗</span></button>
       </form>
-      <div style="font-size: 11px; color: #777; margin-top: 14px;">
-        Default key: <code>spiderverse</code>
-      </div>
-    </div>
+      <p class="login-foot">Sign in with your host credentials.</p>
+    </section>
 
-    <!-- 2. DASHBOARD VIEW (WHEN AUTHENTICATED) -->
-    <div id="admin-dashboard-section" style="display: none;">
-      <!-- Header Bar -->
-      <header class="status-bar" style="margin-bottom: 16px;">
-        <div>
-          <h1 class="chromatic-text" style="font-size: 20px;">SPIDER-VERSE HOST CONTROLLER</h1>
-          <div style="font-size: 11px; color: #00ff66;">● SECURE SESSION ACTIVE</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span id="admin-conn-status" style="font-size: 12px; font-weight: 700; color: #00ff66;">ONLINE</span>
-          <button id="btn-logout" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: #ddd; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-            LOGOUT
-          </button>
-        </div>
+    <section id="admin-dashboard-section" class="admin-dashboard" style="display:none">
+      <header class="status-bar admin-header">
+        <div><a class="brand" href="/"><img src="/img/spider-emblem.svg" alt=""><span>BIT N BUILD</span></a><p class="header-caption">HOST CONSOLE</p></div>
+        <div class="admin-session"><span id="admin-conn-status" class="connection-tag">ONLINE</span><button id="btn-logout" class="logout-button">LOG OUT</button></div>
       </header>
 
-      <!-- LIVE EVENT STATE SUMMARY -->
-      <div class="comic-panel highlight" style="margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h2 style="font-size: 15px; color: #ffcc00; text-transform: uppercase;">⚡ Live Multiverse Status</h2>
-          <span id="admin-stage-badge" style="font-family: var(--font-comic); font-size: 14px; padding: 3px 8px; border-radius: 6px; background: var(--bit-cyan); color: #000;">
-            LOBBY
-          </span>
+      <section class="comic-panel admin-summary">
+        <header class="section-heading"><div><h2>GAME STATUS</h2></div><span id="admin-stage-badge" class="stage-badge">LOBBY</span></header>
+        <div class="stat-grid">
+          <article class="stat-tile"><small>CONNECTED SLINGERS</small><strong id="admin-players-count" class="stat-badge">0</strong></article>
+          <article class="stat-tile"><small>CURRENT ROUND</small><strong id="admin-q-index" class="stat-badge">1 / 8</strong></article>
+          <article class="stat-tile"><small>COUNTDOWN / TIME</small><strong id="admin-timer-val" class="stat-badge">--</strong></article>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 14px;">
-          <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
-            <div style="font-size: 10px; color: #aaa; text-transform: uppercase;">CONNECTED PLAYERS</div>
-            <div id="admin-players-count" class="stat-badge" style="color: #00ff66;">0</div>
-          </div>
-          <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
-            <div style="font-size: 10px; color: #aaa; text-transform: uppercase;">CURRENT ROUND</div>
-            <div id="admin-q-index" class="stat-badge">1 / 8</div>
-          </div>
-          <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
-            <div style="font-size: 10px; color: #aaa; text-transform: uppercase;">COUNTDOWN / TIME</div>
-            <div id="admin-timer-val" class="stat-badge" style="color: #ffd700;">--</div>
-          </div>
+        <div class="active-question"><small>ACTIVE QUESTION</small><strong id="admin-cur-q-text">None (In Lobby / Idle)</strong></div>
+        <div class="admin-team-grid">
+          <article class="admin-team admin-team-bit"><div><span>TEAM BIT</span><small>MILES MORALES</small></div><strong id="admin-bit-stats">0 PTS | 0% Assembled | 0 Players</strong></article>
+          <article class="admin-team admin-team-build"><div><span>TEAM BUILD</span><small>SPIDER-GWEN</small></div><strong id="admin-build-stats">0 PTS | 0% Assembled | 0 Players</strong></article>
         </div>
+      </section>
 
-        <!-- Active Question Overview -->
-        <div style="background: rgba(0,0,0,0.4); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid #ffcc00;">
-          <div style="font-size: 11px; color: #ffcc00; font-weight: 700;">ACTIVE QUESTION:</div>
-          <div id="admin-cur-q-text" style="font-size: 14px; color: #fff; font-weight: 700; margin-top: 2px;">
-            None (In Lobby / Idle)
-          </div>
-        </div>
-
-        <!-- Team Scores & Assembly Progress -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div style="border-left: 3px solid var(--bit-red); padding-left: 10px; background: rgba(255,0,59,0.06); border-radius: 6px; padding: 8px;">
-            <div style="font-size: 13px; color: var(--bit-red); font-weight: 800;">TEAM BIT (Miles Morales)</div>
-            <div id="admin-bit-stats" style="font-size: 13px; color: #ccc; margin-top: 2px;">
-              0 PTS | 0% Assembled | 0 Players
-            </div>
-          </div>
-          <div style="border-left: 3px solid var(--build-pink); padding-left: 10px; background: rgba(255,0,127,0.06); border-radius: 6px; padding: 8px;">
-            <div style="font-size: 13px; color: var(--build-pink); font-weight: 800;">TEAM BUILD (Spider-Gwen)</div>
-            <div id="admin-build-stats" style="font-size: 13px; color: #ccc; margin-top: 2px;">
-              0 PTS | 0% Assembled | 0 Players
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MAIN EVENT CONTROLS -->
-      <div class="comic-panel" style="margin-bottom: 16px;">
-        <h2 style="font-size: 15px; color: #ffcc00; text-transform: uppercase; margin-bottom: 12px;">
-          🎮 Event Flow Controls
-        </h2>
+      <section class="comic-panel admin-controls">
+        <header class="section-heading"><div><p class="eyebrow"><span>ROUND BY ROUND</span></p><h2>EVENT CONTROLS</h2></div></header>
         <div class="admin-grid">
-          <button id="btn-start-game" class="admin-btn primary" style="grid-column: span 2;">
-            ▶️ START FLASHMOB QUIZ (LAUNCH ROUND 1)
-          </button>
-          <button id="btn-next-q" class="admin-btn" style="border-color: #00ff66; color: #00ff66;">
-            ⏩ NEXT QUESTION
-          </button>
-          <button id="btn-reveal-ans" class="admin-btn" style="border-color: #ffd700; color: #ffd700;">
-            📢 FORCE REVEAL ANSWER
-          </button>
-          <button id="btn-trigger-win" class="admin-btn" style="border-color: #ff007f; color: #ff007f;">
-            🏆 TRIGGER VICTORY SCREEN
-          </button>
-          <button id="btn-reset-game" class="admin-btn danger">
-            🔄 RESET GAME (CLEAR SCORES)
-          </button>
+          <button id="btn-start-game" class="admin-btn primary">START THE QUIZ <span>↗</span></button>
+          <button id="btn-next-q" class="admin-btn">NEXT QUESTION <span>→</span></button>
+          <button id="btn-reveal-ans" class="admin-btn">REVEAL ANSWER <span>⌄</span></button>
+          <button id="btn-trigger-win" class="admin-btn">SHOW VICTORY SCREEN <span>✳</span></button>
+          <button id="btn-reset-game" class="admin-btn danger">RESET EVENT <span>↺</span></button>
         </div>
-      </div>
+      </section>
 
-      <!-- REHEARSAL & TESTING TIERS -->
-      <div class="comic-panel">
-        <h2 style="font-size: 15px; color: #ffcc00; text-transform: uppercase; margin-bottom: 6px;">
-          🧪 Rehearsal & Node Unlock Simulation
-        </h2>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 12px;">
-          Click tier buttons below to simulate nodes lighting up across all connected phones to test visual appearance:
-        </p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-          <div>
-            <div style="font-size: 12px; color: var(--bit-red); font-weight: 800; margin-bottom: 6px;">
-              Team Bit Tiers:
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="1" style="padding: 6px 10px; font-size: 13px;">T1</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="2" style="padding: 6px 10px; font-size: 13px;">T2</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="3" style="padding: 6px 10px; font-size: 13px;">T3</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="4" style="padding: 6px 10px; font-size: 13px;">T4</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="5" style="padding: 6px 10px; font-size: 13px;">T5</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="6" style="padding: 6px 10px; font-size: 13px;">T6</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="7" style="padding: 6px 10px; font-size: 13px;">T7</button>
-              <button class="admin-btn btn-test-tier" data-team="bit" data-tier="8" style="padding: 6px 10px; font-size: 13px; border-color: #ffd700; color: #ffd700;">T8 (100%)</button>
-            </div>
-          </div>
-
-          <div>
-            <div style="font-size: 12px; color: var(--build-pink); font-weight: 800; margin-bottom: 6px;">
-              Team Build Tiers:
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="1" style="padding: 6px 10px; font-size: 13px;">T1</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="2" style="padding: 6px 10px; font-size: 13px;">T2</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="3" style="padding: 6px 10px; font-size: 13px;">T3</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="4" style="padding: 6px 10px; font-size: 13px;">T4</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="5" style="padding: 6px 10px; font-size: 13px;">T5</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="6" style="padding: 6px 10px; font-size: 13px;">T6</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="7" style="padding: 6px 10px; font-size: 13px;">T7</button>
-              <button class="admin-btn btn-test-tier" data-team="build" data-tier="8" style="padding: 6px 10px; font-size: 13px; border-color: #ffd700; color: #ffd700;">T8 (100%)</button>
-            </div>
-          </div>
+      <section class="comic-panel rehearsal-panel">
+        <header class="section-heading"><div><p class="eyebrow"><span>SAFE TO PREVIEW</span></p><h2>SPIDER ASSEMBLY PREVIEW</h2></div></header>
+        <p>Set a team's progress to preview the projected spider build.</p>
+        <div class="rehearsal-grid">
+          <div class="tier-group tier-bit"><h3>TEAM BIT · MILES</h3><div class="tier-buttons">
+            <button class="admin-btn btn-test-tier" data-team="bit" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="bit" data-tier="7">07</button><button class="admin-btn btn-test-tier final-tier" data-team="bit" data-tier="8">08 / 100%</button>
+          </div></div>
+          <div class="tier-group tier-build"><h3>TEAM BUILD · GWEN</h3><div class="tier-buttons">
+            <button class="admin-btn btn-test-tier" data-team="build" data-tier="1">01</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="2">02</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="3">03</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="4">04</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="5">05</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="6">06</button><button class="admin-btn btn-test-tier" data-team="build" data-tier="7">07</button><button class="admin-btn btn-test-tier final-tier" data-team="build" data-tier="8">08 / 100%</button>
+          </div></div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="/js/adminApp.js"></script>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="/js/adminApp.js?v=mobile4"></script>
 </body>
 </html>

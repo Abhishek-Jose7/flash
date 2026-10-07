@@ -124,7 +124,7 @@ class AdminApp {
       const connStatus = document.getElementById('admin-conn-status');
       if (connStatus) {
         connStatus.textContent = 'ONLINE';
-        connStatus.style.color = '#00ff66';
+        connStatus.style.color = 'var(--orchid)';
       }
     };
 
@@ -152,7 +152,7 @@ class AdminApp {
       const connStatus = document.getElementById('admin-conn-status');
       if (connStatus) {
         connStatus.textContent = 'RECONNECTING...';
-        connStatus.style.color = '#ffcc00';
+        connStatus.style.color = 'var(--blush)';
       }
       if (this.adminToken) {
         setTimeout(() => this.connectWebSocket(), 1500);

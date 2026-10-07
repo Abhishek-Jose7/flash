@@ -17,15 +17,15 @@ export class GameStateEngine {
     this.countdownSeconds = 3;
     this.winnerTeam = null;
 
-    // Two Teams: Team Bit (Miles Morales Red) vs Team Build (Spider-Gwen Pink/Teal)
+    // Two Teams: Team Bit red and Team Build blue.
     this.teams = {
       bit: {
         id: 'bit',
         name: 'TEAM BIT',
         hero: 'Miles Morales',
-        themeColor: '#ff003b',
-        secondaryColor: '#00f0ff',
-        bgDark: '#0a0307',
+        themeColor: '#E3212A',
+        secondaryColor: '#F4F6F8',
+        bgDark: '#10141B',
         score: 0,
         unlockedTiers: new Set(),
         unlockedNodes: new Set(),
@@ -36,9 +36,9 @@ export class GameStateEngine {
         id: 'build',
         name: 'TEAM BUILD',
         hero: 'Spider-Gwen',
-        themeColor: '#ff007f',
-        secondaryColor: '#00f0ff',
-        bgDark: '#03080f',
+        themeColor: '#2474CC',
+        secondaryColor: '#F4F6F8',
+        bgDark: '#10141B',
         score: 0,
         unlockedTiers: new Set(),
         unlockedNodes: new Set(),
@@ -73,10 +73,14 @@ export class GameStateEngine {
   registerPlayer(playerId, nickname, preferredTeam = null) {
     let player = this.players.get(playerId);
     if (!player) {
-      // Auto-balance teams
+      // Balance arrivals; randomize which team gets the first player in each tie.
       let teamId = preferredTeam;
       if (!teamId || !this.teams[teamId]) {
-        teamId = this.teams.bit.playerCount <= this.teams.build.playerCount ? 'bit' : 'build';
+        const bitCount = this.teams.bit.playerCount;
+        const buildCount = this.teams.build.playerCount;
+        if (bitCount < buildCount) teamId = 'bit';
+        else if (buildCount < bitCount) teamId = 'build';
+        else teamId = Math.random() < 0.5 ? 'bit' : 'build';
       }
 
       const spiderHandles = [
@@ -356,7 +360,7 @@ export class GameStateEngine {
   }
 
   /**
-   * Full team data with unlocked node/edge arrays — ONLY for stage/admin
+   * Full team data with unlocked node/edge arrays — only for the host console.
    */
   _getFullTeams() {
     const slim = this._getSlimTeams();
@@ -431,7 +435,7 @@ export class GameStateEngine {
   }
 
   /**
-   * Full broadcast for stage projector & admin (~600-800 bytes)
+   * Full broadcast for the host console (~600-800 bytes).
    * Includes the full unlocked graph arrays needed for canvas rendering
    */
   getStageBroadcast() {

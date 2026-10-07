@@ -1,4 +1,4 @@
-# Caddy Automated HTTPS Reverse Proxy for Spider-Verse Flashmob
+# Caddy Automated HTTPS Reverse Proxy for Bit N Build
 # Automatically obtains and renews free SSL certificates for your custom domain
 
 {$DOMAIN_NAME:localhost} {

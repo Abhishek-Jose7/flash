@@ -1,7 +1,7 @@
 {
   "name": "spiderverse-flashmob",
   "version": "1.0.0",
-  "description": "High-concurrency Spider-Verse interactive live event platform for flashmobs",
+  "description": "High-concurrency Bit N Build interactive live game platform",
   "main": "server/server.js",
   "type": "module",
   "scripts": {

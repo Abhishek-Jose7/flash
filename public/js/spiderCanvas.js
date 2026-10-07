@@ -32,9 +32,9 @@ export class SpiderCanvasRenderer {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext('2d');
 
-    this.themeColor = options.themeColor || '#ff003b';
-    this.accentColor = options.accentColor || '#00f0ff';
-    this.glowColor = options.glowColor || 'rgba(255, 0, 59, 0.85)';
+    this.themeColor = options.themeColor || '#E3212A';
+    this.accentColor = options.accentColor || '#F4F6F8';
+    this.glowColor = options.glowColor || 'rgba(227, 33, 42, 0.78)';
 
     this.percent = 0;
     this.targetPercent = 0;
@@ -228,4 +228,3 @@ export class SpiderCanvasRenderer {
     window.removeEventListener('resize', this.resize);
   }
 }
-

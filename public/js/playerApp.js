@@ -1,4 +1,3 @@
-import { sound } from './audioEngine.js';
 import { SpiderCanvasRenderer } from './spiderCanvas.js';
 
 class PlayerApp {
@@ -69,9 +68,6 @@ class PlayerApp {
         }
 
         if (joinError) joinError.style.display = 'none';
-        sound.init();
-        sound.playThwip();
-
         this.nickname = val;
         localStorage.setItem('spider_nick', this.nickname);
         this.sendJoin();
@@ -95,14 +91,6 @@ class PlayerApp {
       });
     });
 
-    // Mute toggle
-    const btnMute = document.getElementById('btn-mute');
-    if (btnMute) {
-      btnMute.addEventListener('click', () => {
-        const isMuted = sound.toggleMute();
-        btnMute.textContent = isMuted ? '🔇' : '🔊';
-      });
-    }
   }
 
   connectWebSocket() {
@@ -114,8 +102,8 @@ class PlayerApp {
     this.ws.onopen = () => {
       const connStatus = document.getElementById('conn-status');
       if (connStatus) {
-        connStatus.textContent = '⚡ CONNECTED TO MULTIVERSE';
-        connStatus.style.color = '#00ff66';
+        connStatus.textContent = '⚡ CONNECTED TO LIVE GAME';
+        connStatus.style.color = 'var(--orchid)';
       }
 
       if (this.nickname) {
@@ -135,8 +123,8 @@ class PlayerApp {
     this.ws.onclose = () => {
       const connStatus = document.getElementById('conn-status');
       if (connStatus) {
-        connStatus.textContent = '⚠️ RECONNECTING TO MULTIVERSE...';
-        connStatus.style.color = '#ffcc00';
+        connStatus.textContent = '⚠️ RECONNECTING TO LIVE GAME...';
+        connStatus.style.color = 'var(--blush)';
       }
       setTimeout(() => this.connectWebSocket(), 1500);
     };
@@ -159,7 +147,6 @@ class PlayerApp {
   submitAnswer(opt) {
     if (this.hasAnswered || !this.state || this.state.stage !== 'QUESTION_ACTIVE') return;
 
-    sound.playTap();
     if (navigator.vibrate) navigator.vibrate(50);
 
     this.hasAnswered = true;
@@ -237,11 +224,8 @@ class PlayerApp {
   handleAnswerResult(result) {
     if (!result) return;
     if (result.isCorrect) {
-      sound.playCorrect();
-      sound.playThwip();
       if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
     } else {
-      sound.playWrong();
       if (navigator.vibrate) navigator.vibrate([150]);
     }
   }
@@ -288,15 +272,15 @@ class PlayerApp {
       lobbyMascot.style.filter = `drop-shadow(0 4px 16px ${isBit ? 'var(--bit-red-glow)' : 'var(--build-pink-glow)'})`;
     }
     if (lobbyCard) {
-      lobbyCard.className = `modern-panel ${isBit ? 'highlight-bit' : 'highlight-build'}`;
+      lobbyCard.className = `lobby-card ${isBit ? 'highlight-bit' : 'highlight-build'}`;
     }
 
     // Set Spider Canvas Theme
     if (this.spiderRenderer) {
       if (isBit) {
-        this.spiderRenderer.setTheme('#e6002b', '#00e5ff', 'rgba(230, 0, 43, 0.85)');
+        this.spiderRenderer.setTheme('#E3212A', '#F4F6F8', 'rgba(227, 33, 42, 0.78)');
       } else {
-        this.spiderRenderer.setTheme('#ff1479', '#00f5d4', 'rgba(255, 20, 121, 0.85)');
+        this.spiderRenderer.setTheme('#2474CC', '#F4F6F8', 'rgba(36, 116, 204, 0.78)');
       }
     }
   }
@@ -380,7 +364,6 @@ class PlayerApp {
         const countEl = document.getElementById('countdown-num');
         if (countEl) {
           countEl.textContent = state.countdown;
-          sound.playTick(state.countdown === 1);
         }
         this.hasAnswered = false;
         this.selectedOption = null;
@@ -458,7 +441,7 @@ class PlayerApp {
             if (resBox) resBox.className = 'reveal-card correct';
             if (resTitle) {
               resTitle.textContent = '⚡ THWIP! CORRECT!';
-              resTitle.style.color = '#00ff66';
+              resTitle.style.color = 'var(--orchid)';
             }
             if (resSub) {
               resSub.textContent = `+${state.playerAnswer.points} Points added to ${this.player.teamId === 'bit' ? 'Team Bit' : 'Team Build'}!`;
@@ -467,7 +450,7 @@ class PlayerApp {
             if (resBox) resBox.className = 'reveal-card wrong';
             if (resTitle) {
               resTitle.textContent = '🕸️ MISSED!';
-              resTitle.style.color = '#ff003b';
+              resTitle.style.color = 'var(--red)';
             }
             if (resSub) {
               resSub.textContent = `Correct answer was: "${q ? q.options[q.correctIndex] : ''}"`;
@@ -477,7 +460,7 @@ class PlayerApp {
           if (resBox) resBox.className = 'reveal-card';
           if (resTitle) {
             resTitle.textContent = '⏳ TIME UP!';
-            resTitle.style.color = '#ffcc00';
+            resTitle.style.color = 'var(--orchid)';
           }
           if (resSub) {
             resSub.textContent = `Correct answer was: "${q ? q.options[q.correctIndex] : ''}"`;
@@ -488,7 +471,6 @@ class PlayerApp {
 
       case 'VICTORY': {
         this.showScreen('victory');
-        sound.playVictory();
 
         const winBanner = document.getElementById('victory-team-banner');
         const winSub = document.getElementById('victory-sub-banner');
@@ -503,7 +485,7 @@ class PlayerApp {
         if (winSub) {
           winSub.textContent = isWinner
             ? '🏆 YOUR TEAM FULLY ASSEMBLED THE SPIDER-MAN EMBLEM!'
-            : '🕸️ VALIANT BATTLE! The Spider-Verse is saved!';
+            : '🕸️ YOUR CREW CAME THROUGH! THE CITY IS SAFE!';
         }
 
         // Populate Top 5 MVPs Leaderboard Table with Accuracy (Correct Count) & Score

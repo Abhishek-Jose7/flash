@@ -78,10 +78,6 @@ app.use(express.static(PUBLIC_DIR, {
 }));
 
 // Route aliases
-app.get('/stage', (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'stage.html'));
-});
-
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
@@ -116,7 +112,7 @@ app.get('/api/qr', async (req, res) => {
     const svg = await QRCode.toString(targetUrl, {
       type: 'svg',
       color: {
-        dark: '#00f0ff',
+        dark: '#10141B',
         light: '#00000000'
       },
       margin: 1
@@ -145,7 +141,6 @@ const BROADCAST_THROTTLE_MS = 200; // Max ~5 updates/sec (was 60ms / 16/sec)
 
 // Pre-serialized broadcast cache — avoids re-serializing identical payloads
 let lastPlayerJson = '';
-let lastStageJson = '';
 let lastStateVersion = -1;
 // Track whether only the timer changed (countdown/remaining) for ultra-slim tick
 let lastTimerOnlyHash = '';
@@ -166,7 +161,7 @@ function requestBroadcast() {
 function executeBroadcast() {
   lastBroadcastTime = Date.now();
 
-  // Build both payloads
+  // Build the slim player payload first.
   const playerState = engine.getPlayerBroadcast();
   const playerJson = JSON.stringify({ type: 'STATE_UPDATE', state: playerState });
 
@@ -176,25 +171,25 @@ function executeBroadcast() {
   }
   lastPlayerJson = playerJson;
 
-  // Only build full stage payload if we have stage/admin clients
-  let stageJson = null;
-  let hasStageClients = false;
+  // Only build the full graph payload when the host console is connected.
+  let fullJson = null;
+  let hasAdminClients = false;
   for (const [, meta] of clients) {
-    if (meta.role === 'stage' || meta.role === 'admin') {
-      hasStageClients = true;
+    if (meta.role === 'admin') {
+      hasAdminClients = true;
       break;
     }
   }
 
-  if (hasStageClients) {
-    const stageState = engine.getStageBroadcast();
-    stageJson = JSON.stringify({ type: 'STATE_UPDATE', state: stageState });
+  if (hasAdminClients) {
+    const adminState = engine.getStageBroadcast();
+    fullJson = JSON.stringify({ type: 'STATE_UPDATE', state: adminState });
   }
 
   // Single-pass broadcast with role-aware payload selection
   for (const [ws, meta] of clients.entries()) {
-    if (meta.role === 'stage' || meta.role === 'admin') {
-      safeSend(ws, stageJson || playerJson);
+    if (meta.role === 'admin') {
+      safeSend(ws, fullJson || playerJson);
     } else {
       safeSend(ws, playerJson);
     }
@@ -240,15 +235,10 @@ wss.on('connection', (ws, req) => {
 
   const socketId = 'sock_' + Math.random().toString(36).substring(2, 9);
 
-  // Detect role from the URL path or Referer header
+  // Detect the host console from the URL path or Referer header.
   const referer = req.headers.referer || '';
   const urlPath = req.url || '';
-  let role = 'player'; // default
-  if (urlPath.includes('/stage') || referer.includes('/stage')) {
-    role = 'stage';
-  } else if (urlPath.includes('/admin') || referer.includes('/admin')) {
-    role = 'admin';
-  }
+  const role = urlPath.includes('/admin') || referer.includes('/admin') ? 'admin' : 'player';
 
   const clientMeta = {
     socketId,
@@ -267,8 +257,8 @@ wss.on('connection', (ws, req) => {
   });
 
   // Send immediate initial state — role-aware
-  if (role === 'stage' || role === 'admin') {
-    // Stage & admin get full state + graph data
+  if (role === 'admin') {
+    // The host console gets full state + graph data.
     safeSend(ws, JSON.stringify({
       type: 'INIT',
       graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
@@ -294,11 +284,11 @@ wss.on('connection', (ws, req) => {
 
       switch (msg.type) {
         case 'JOIN': {
-          const { playerId, nickname, preferredTeam } = msg;
+          const { playerId, nickname } = msg;
           if (!playerId || typeof playerId !== 'string') return;
 
           clientMeta.playerId = playerId;
-          const player = engine.registerPlayer(playerId, nickname, preferredTeam);
+          const player = engine.registerPlayer(playerId, nickname);
 
           safeSend(ws, JSON.stringify({
             type: 'JOINED',
@@ -325,7 +315,7 @@ wss.on('connection', (ws, req) => {
             playerState: engine.getPlayerState(clientMeta.playerId)
           }));
 
-          // Immediately broadcast progress update to stage and all players
+          // Immediately broadcast progress update to host and all players.
           requestBroadcast();
           break;
         }
@@ -388,7 +378,6 @@ function handleAdminAction(action, payload, adminWs) {
       engine.reset();
       // Reset broadcast cache on game reset
       lastPlayerJson = '';
-      lastStageJson = '';
       break;
 
     case 'UNLOCK_TIER_TEST': {
@@ -423,10 +412,9 @@ setInterval(() => {
 // Server launch with 1024 backlog queue for high-concurrency bursts
 server.listen({ port: PORT, backlog: 1024 }, () => {
   console.log(`\n🕷️ ========================================`);
-  console.log(`🕷️ SPIDER-VERSE FLASHMOB SERVER LIVE!`);
+  console.log(`🕷️ BIT N BUILD GAME SERVER LIVE!`);
   console.log(`🕷️ HTTP & WebSocket running on port: ${PORT}`);
   console.log(`🕷️ Mobile Player:    http://localhost:${PORT}/`);
-  console.log(`🕷️ Stage Projector:  http://localhost:${PORT}/stage`);
   console.log(`🕷️ Admin Host:       http://localhost:${PORT}/admin`);
   console.log(`🕷️ Health Check:     http://localhost:${PORT}/health`);
   console.log(`🕷️ ========================================\n`);

@@ -1,6 +1,6 @@
 # 🚀 Zero-Lag Cloud Deployment Guide
 
-This guide details how to host your Spider-Verse flashmob platform on dedicated, **non-sleeping cloud infrastructure** at **$0 cost** using either **DigitalOcean (\$200 Free Credits)** or **AWS (12-Month Free Tier)**.
+This guide details how to host your Bit N Build flashmob platform on dedicated, **non-sleeping cloud infrastructure** at **$0 cost** using either **DigitalOcean (\$200 Free Credits)** or **AWS (12-Month Free Tier)**.
 
 Because your QR code is physically printed, the server must **never go to sleep** and must maintain an immutable, permanent URL (`https://live.yourdomain.com`).
 
@@ -97,6 +97,6 @@ sudo docker compose up -d --build
 
 Before your printed flyers are distributed:
 - [ ] Open `https://live.yourdomain.com` on your mobile phone on 4G/5G to verify instant load.
-- [ ] Open `https://live.yourdomain.com/stage` on your projector laptop to ensure the live QR code points to `https://live.yourdomain.com`.
+- [ ] Open `https://live.yourdomain.com` on a phone to confirm the join screen loads and assigns a team.
 - [ ] Open `https://live.yourdomain.com/admin` to confirm the host controls work.
 - [ ] Test 1 question to verify real-time spider node illumination.
