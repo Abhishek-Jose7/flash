@@ -6,7 +6,6 @@ import { WebSocketServer, WebSocket } from 'ws';
 import QRCode from 'qrcode';
 import { GameStateEngine } from './gameState.js';
 import { RateLimiter } from './rateLimiter.js';
-import { SPIDER_NODES, SPIDER_EDGES } from './spiderGraphData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -99,14 +98,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Graph geometry endpoint — cached HTTP endpoint (fetched once by stage/admin)
-app.get('/api/spider-graph', (req, res) => {
-  res.setHeader('Cache-Control', 'public, max-age=3600, immutable');
-  res.json({
-    nodes: SPIDER_NODES,
-    edges: SPIDER_EDGES
-  });
-});
 
 // Dynamic QR code generator pointing to current host / LAN IP
 app.get('/api/qr', async (req, res) => {
@@ -272,7 +263,6 @@ wss.on('connection', (ws, req) => {
     // The host console gets full state + graph data.
     safeSend(ws, JSON.stringify({
       type: 'INIT',
-      graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
       state: engine.getStageBroadcast()
     }));
   } else {
@@ -343,7 +333,6 @@ wss.on('connection', (ws, req) => {
           if (!wasAdmin) {
             safeSend(ws, JSON.stringify({
               type: 'INIT',
-              graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
               state: engine.getStageBroadcast()
             }));
           }

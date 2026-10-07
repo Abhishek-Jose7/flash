@@ -1,13 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameStateEngine } from '../server/gameState.js';
-import { UNLOCK_TIERS, TOTAL_NODES, TOTAL_EDGES } from '../server/spiderGraphData.js';
 
-test('Spider-Man Graph Predefined Geometry is intact', () => {
-  assert.equal(TOTAL_NODES, 48, 'Should have exactly 48 nodes');
-  assert.equal(TOTAL_EDGES, 61, 'Should have 61 edges');
-  assert.equal(UNLOCK_TIERS.length, 8, 'Should have 8 progressive unlock tiers');
-});
 
 test('Team balancing on player join', () => {
   const engine = new GameStateEngine();
