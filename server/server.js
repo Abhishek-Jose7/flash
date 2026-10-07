@@ -18,9 +18,6 @@ const ADMIN_PASSKEY = process.env.ADMIN_KEY || (process.env.NODE_ENV === 'produc
 if (!ADMIN_PASSKEY) {
   throw new Error('ADMIN_KEY must be set in production.');
 }
-if (process.env.NODE_ENV === 'production' && ADMIN_PASSKEY.length < 32) {
-  throw new Error('ADMIN_KEY must be at least 32 characters in production.');
-}
 const MAX_CONNECTIONS = Number.parseInt(process.env.MAX_CONNECTIONS || '1000', 10);
 const MAX_PLAYERS = Number.parseInt(process.env.MAX_PLAYERS || '1000', 10);
 const MAX_BUFFERED_BYTES = 256 * 1024;
@@ -98,7 +95,7 @@ app.use(express.static(PUBLIC_DIR, {
   maxAge: '1d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache'); // HTML always fresh
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     } else if (/\.(js|css)$/.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=300'); // unhashed names: let deploys land fast
     }

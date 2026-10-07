@@ -153,13 +153,12 @@ body.player-page {
   filter: grayscale(100%) brightness(0);
 }
 
-/* Hanging Element - Pendulum Swing */
 .hanging-container {
   position: absolute;
-  top: -40px;
+  top: -80px;
   left: 50%;
   width: 40px;
-  height: 35%;
+  height: 45%;
   margin-left: -20px; /* Center it */
   transform-origin: top center;
   animation: swing 3.5s ease-in-out infinite alternate;
@@ -227,7 +226,6 @@ body.player-page {
   display: flex;
   flex-direction: column;
   z-index: 5;
-  overflow: hidden;
 }
 
 .screens {
