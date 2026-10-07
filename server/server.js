@@ -24,7 +24,7 @@ const engine = new GameStateEngine();
 const connectionLimiter = new RateLimiter({ maxTokens: 800, refillRate: 200, maxPayloadBytes: 2048 });
 const messageLimiter = new RateLimiter({ maxTokens: 25, refillRate: 10, maxPayloadBytes: 2048 });
 
-// Connection tracking: ws -> { playerId, ip, isAlive, lastActive }
+// Connection tracking: ws -> { playerId, ip, isAlive, lastActive, role }
 const clients = new Map();
 
 // Enable proxy trusting for Caddy, AWS ELB, and Cloudflare reverse proxies
@@ -72,8 +72,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Graph geometry endpoint for fast client cache
+// Graph geometry endpoint — cached HTTP endpoint (fetched once by stage/admin)
 app.get('/api/spider-graph', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600, immutable');
   res.json({
     nodes: SPIDER_NODES,
     edges: SPIDER_EDGES
@@ -111,10 +112,17 @@ app.post('/api/admin/login', (req, res) => {
   return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
 });
 
-// --- State Broadcast Engine (Throttled & Batched) ---
+// --- State Broadcast Engine (Throttled, Batched & Delta-Aware) ---
 let broadcastPending = false;
 let lastBroadcastTime = 0;
-const BROADCAST_THROTTLE_MS = 60; // Max ~16 updates/sec
+const BROADCAST_THROTTLE_MS = 200; // Max ~5 updates/sec (was 60ms / 16/sec)
+
+// Pre-serialized broadcast cache — avoids re-serializing identical payloads
+let lastPlayerJson = '';
+let lastStageJson = '';
+let lastStateVersion = -1;
+// Track whether only the timer changed (countdown/remaining) for ultra-slim tick
+let lastTimerOnlyHash = '';
 
 function requestBroadcast() {
   const now = Date.now();
@@ -131,13 +139,40 @@ function requestBroadcast() {
 
 function executeBroadcast() {
   lastBroadcastTime = Date.now();
-  const baseState = engine.getBroadcastState();
-  const baseJson = JSON.stringify({ type: 'STATE_UPDATE', state: baseState });
 
-  // Single-pass O(1) serialization broadcast for massive concurrency (1,000+ players)
-  for (const [ws] of clients.entries()) {
+  // Build both payloads
+  const playerState = engine.getPlayerBroadcast();
+  const playerJson = JSON.stringify({ type: 'STATE_UPDATE', state: playerState });
+
+  // Quick check: skip broadcast entirely if player payload is identical (no state change)
+  if (playerJson === lastPlayerJson) {
+    return;
+  }
+  lastPlayerJson = playerJson;
+
+  // Only build full stage payload if we have stage/admin clients
+  let stageJson = null;
+  let hasStageClients = false;
+  for (const [, meta] of clients) {
+    if (meta.role === 'stage' || meta.role === 'admin') {
+      hasStageClients = true;
+      break;
+    }
+  }
+
+  if (hasStageClients) {
+    const stageState = engine.getStageBroadcast();
+    stageJson = JSON.stringify({ type: 'STATE_UPDATE', state: stageState });
+  }
+
+  // Single-pass broadcast with role-aware payload selection
+  for (const [ws, meta] of clients.entries()) {
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(baseJson);
+      if (meta.role === 'stage' || meta.role === 'admin') {
+        ws.send(stageJson || playerJson);
+      } else {
+        ws.send(playerJson);
+      }
     }
   }
 }
@@ -180,12 +215,24 @@ wss.on('connection', (ws, req) => {
   }
 
   const socketId = 'sock_' + Math.random().toString(36).substring(2, 9);
+
+  // Detect role from the URL path or Referer header
+  const referer = req.headers.referer || '';
+  const urlPath = req.url || '';
+  let role = 'player'; // default
+  if (urlPath.includes('/stage') || referer.includes('/stage')) {
+    role = 'stage';
+  } else if (urlPath.includes('/admin') || referer.includes('/admin')) {
+    role = 'admin';
+  }
+
   const clientMeta = {
     socketId,
     playerId: null,
     ip,
     isAlive: true,
-    lastActive: Date.now()
+    lastActive: Date.now(),
+    role
   };
   clients.set(ws, clientMeta);
 
@@ -195,12 +242,21 @@ wss.on('connection', (ws, req) => {
     clientMeta.lastActive = Date.now();
   });
 
-  // Send immediate initial state
-  ws.send(JSON.stringify({
-    type: 'INIT',
-    graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
-    state: engine.getBroadcastState()
-  }));
+  // Send immediate initial state — role-aware
+  if (role === 'stage' || role === 'admin') {
+    // Stage & admin get full state + graph data
+    ws.send(JSON.stringify({
+      type: 'INIT',
+      graph: { nodes: SPIDER_NODES, edges: SPIDER_EDGES },
+      state: engine.getStageBroadcast()
+    }));
+  } else {
+    // Players get slim state only — no graph data (they don't need node/edge arrays)
+    ws.send(JSON.stringify({
+      type: 'INIT',
+      state: engine.getPlayerBroadcast()
+    }));
+  }
 
   ws.on('message', (raw) => {
     if (!messageLimiter.validatePayload(raw) || !messageLimiter.isAllowed(clientMeta.socketId)) {
@@ -256,6 +312,8 @@ wss.on('connection', (ws, req) => {
             return;
           }
 
+          // Mark this client as admin role if it wasn't detected from URL
+          clientMeta.role = 'admin';
           handleAdminAction(msg.action, msg.payload, ws);
           break;
         }
@@ -304,6 +362,9 @@ function handleAdminAction(action, payload, adminWs) {
 
     case 'RESET_GAME':
       engine.reset();
+      // Reset broadcast cache on game reset
+      lastPlayerJson = '';
+      lastStageJson = '';
       break;
 
     case 'UNLOCK_TIER_TEST': {

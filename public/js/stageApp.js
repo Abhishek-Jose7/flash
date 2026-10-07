@@ -48,6 +48,19 @@ class StageApp {
     }
   }
 
+  async fetchGraphData() {
+    // Fetch graph geometry once via cached HTTP — avoids bloating every WS broadcast
+    if (this.graphData) return;
+    try {
+      const res = await fetch('/api/spider-graph');
+      this.graphData = await res.json();
+      if (this.milesRenderer) this.milesRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
+      if (this.gwenRenderer) this.gwenRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
+    } catch (e) {
+      console.error('Failed to fetch graph data:', e);
+    }
+  }
+
   connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}`;
@@ -57,15 +70,20 @@ class StageApp {
     this.ws.onopen = () => {
       document.getElementById('stage-conn-tag').textContent = 'ONLINE';
       document.getElementById('stage-conn-tag').style.color = '#00ff66';
+      // Pre-fetch graph data via HTTP on connect
+      this.fetchGraphData();
     };
 
     this.ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'INIT') {
-          this.graphData = msg.graph;
-          if (this.milesRenderer) this.milesRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
-          if (this.gwenRenderer) this.gwenRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
+          // Use graph from INIT if provided (server sends it for stage role)
+          if (msg.graph && !this.graphData) {
+            this.graphData = msg.graph;
+            if (this.milesRenderer) this.milesRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
+            if (this.gwenRenderer) this.gwenRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
+          }
           this.renderState(msg.state);
         } else if (msg.type === 'STATE_UPDATE') {
           this.renderState(msg.state);

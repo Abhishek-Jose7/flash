@@ -24,43 +24,37 @@
         <button id="btn-mute" aria-label="Toggle Audio" style="background: none; border: none; font-size: 17px; cursor: pointer;">🔊</button>
       </div>
 
-      <!-- Real Swinging Spider-Man GIF -->
-      <div class="spidey-swing-header" title="Spider-Man Swinging">
-        <img src="/img/spidey-swing.gif" alt="Swinging Spider-Man">
-      </div>
     </header>
 
     <!-- SCREEN 1: JOIN / NAME ENTRY -->
     <section id="screen-join" class="screen active">
       <div class="modern-panel" style="text-align: center; margin: auto 0; padding: 22px 16px;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-bottom: 12px;">
-          <img src="/img/milesIcon.png" alt="Miles" width="46" height="46" style="filter: drop-shadow(0 2px 8px var(--bit-red-glow));">
+          <img src="/img/bit-mascot.png" alt="Team Bit Mascot" width="60" height="60" style="object-fit: contain;">
           <div class="badge-tag" style="background: rgba(255,204,0,0.15); border: 1px solid #ffcc00; color: #ffcc00; padding: 4px 10px; font-size: 11px;">
             ⚡ FLASHMOB ARENA ⚡
           </div>
-          <img src="/img/gwenIcon.png" alt="Gwen" width="46" height="46" style="filter: drop-shadow(0 2px 8px var(--build-pink-glow));">
+          <img src="/img/build-mascot.png" alt="Team Build Mascot" width="60" height="60" style="object-fit: contain;">
         </div>
 
-        <h1 class="chromatic-title" style="font-size: 32px; margin-bottom: 4px;">SPIDER-VERSE</h1>
-        <h2 style="font-size: 14px; color: #ffcc00; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; font-weight: 800;">
-          ASSEMBLE THE SPIDER-MAN EMBLEM
+        <h1 class="main-title" style="font-size: 32px; margin-bottom: 4px; color: #fff;">SPIDER-VERSE</h1>
+        <h2 style="font-size: 14px; color: #ffcc00; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; font-weight: 700;">
+          ASSEMBLE THE EMBLEM
         </h2>
 
         <!-- Team vs Team Presentation -->
         <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-bottom: 16px;">
-          <div style="background: rgba(230,0,43,0.12); border: 1.5px solid var(--bit-red); border-radius: 10px; padding: 8px 6px;">
-            <div style="font-family: var(--font-display); font-size: 13px; color: var(--bit-red);">TEAM BIT</div>
-            <div style="font-size: 11px; color: #aaa;">Miles Morales</div>
+          <div style="background: rgba(230,0,43,0.1); border: 1px solid rgba(230,0,43,0.3); border-radius: 8px; padding: 8px 6px;">
+            <div style="font-weight: 800; font-size: 13px; color: var(--bit-red);">TEAM BIT</div>
           </div>
-          <div style="font-family: var(--font-display); font-size: 13px; color: #ffd700;">VS</div>
-          <div style="background: rgba(255,20,121,0.12); border: 1.5px solid var(--build-pink); border-radius: 10px; padding: 8px 6px;">
-            <div style="font-family: var(--font-display); font-size: 13px; color: var(--build-pink);">TEAM BUILD</div>
-            <div style="font-size: 11px; color: #aaa;">Spider-Gwen</div>
+          <div style="font-weight: 800; font-size: 13px; color: #999;">VS</div>
+          <div style="background: rgba(255,20,121,0.1); border: 1px solid rgba(255,20,121,0.3); border-radius: 8px; padding: 8px 6px;">
+            <div style="font-weight: 800; font-size: 13px; color: var(--build-pink);">TEAM BUILD</div>
           </div>
         </div>
 
         <p style="font-size: 13px; color: #ccc; margin-bottom: 18px; line-height: 1.45;">
-          Enter your name to be auto-balanced into <strong>Team Bit</strong> or <strong>Team Build</strong>. Answer live trivia fast to light up laser nodes on the Spider-Man emblem!
+          Enter your name to be sorted into <strong>Team Bit</strong> or <strong>Team Build</strong>. Answer trivia to assemble the logo!
         </p>
 
         <div style="margin-bottom: 14px;">
@@ -71,27 +65,27 @@
           </div>
         </div>
 
-        <button id="btn-join" class="spider-action-btn">⚡ THWIP! JOIN BATTLE ⚡</button>
-        <div style="font-size: 11px; color: #888; margin-top: 14px;" id="conn-status">⚡ CONNECTING TO MULTIVERSE...</div>
+        <button id="btn-join" class="spider-action-btn">JOIN BATTLE</button>
+        <div style="font-size: 11px; color: #888; margin-top: 14px;" id="conn-status">CONNECTING...</div>
       </div>
     </section>
 
     <!-- SCREEN 2: LOBBY / PRE-ROUND STANDBY -->
     <section id="screen-lobby" class="screen">
       <div id="lobby-panel-card" class="modern-panel" style="text-align: center; padding: 20px 16px; margin: auto 0;">
-        <div class="badge-tag" style="background: #000; border: 1px solid #ffcc00; color: #ffcc00; display: inline-block; margin-bottom: 10px;">
-          AGENT RECRUITED
+        <div class="badge-tag" style="background: #111; border: 1px solid #444; color: #ddd; display: inline-block; margin-bottom: 10px;">
+          CONNECTED
         </div>
-        <h2 id="lobby-team-title" class="chromatic-title" style="font-size: 26px; margin-bottom: 2px;">
+        <h2 id="lobby-team-title" class="main-title" style="font-size: 26px; margin-bottom: 2px;">
           YOU ARE ON TEAM BIT
         </h2>
         <div id="lobby-team-hero" style="font-size: 13px; color: #bbb; margin-bottom: 16px;">
-          Fighting alongside Miles Morales
+          Get ready for the first question!
         </div>
 
         <!-- Real Character Hero Image -->
-        <div style="width: 130px; height: 140px; margin: 0 auto 16px; position: relative;">
-          <img id="lobby-mascot-img" src="/img/miles.png" alt="Team Hero" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 16px var(--bit-red-glow));">
+        <div style="width: 140px; height: 140px; margin: 0 auto 16px; position: relative;">
+          <img id="lobby-mascot-img" src="/img/bit-mascot.png" alt="Team Hero" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
 
         <div style="background: rgba(0,0,0,0.5); border-radius: 10px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1);">
@@ -120,7 +114,7 @@
               INCOMING QUESTION
             </div>
             <div id="countdown-num" class="countdown-digits">3</div>
-            <div class="chromatic-title" style="font-size: 16px; color: var(--bit-cyan);">GET READY TO TAP!</div>
+            <div class="main-title" style="font-size: 16px; color: var(--bit-cyan);">GET READY TO TAP!</div>
           </div>
 
           <!-- Question Card State -->
@@ -164,7 +158,7 @@
           <!-- Interim Reveal State -->
           <div id="view-reveal" style="display: none; flex-direction: column; justify-content: center; flex: 1;">
             <div id="reveal-box" class="reveal-card">
-              <div id="reveal-title" class="reveal-card-title chromatic-title">THWIP! CORRECT!</div>
+              <div id="reveal-title" class="reveal-card-title main-title">THWIP! CORRECT!</div>
               <div id="reveal-sub" style="font-size: 13px; color: #ddd; margin-bottom: 6px;">+850 Points added to your team!</div>
               <div style="font-size: 11px; color: #aaa;">Watch your team's Spider-Man emblem below light up!</div>
             </div>
@@ -192,11 +186,11 @@
           </div>
 
           <!-- Real Character Art Corners -->
-          <div class="char-corner-bit" title="Team Bit: Miles Morales">
-            <img src="/img/miles.png" alt="Miles Morales">
+          <div class="char-corner-bit" title="Team Bit">
+            <img src="/img/bit-mascot.png" alt="Team Bit">
           </div>
-          <div class="char-corner-build" title="Team Build: Spider-Gwen">
-            <img src="/img/gwen.png" alt="Spider-Gwen">
+          <div class="char-corner-build" title="Team Build">
+            <img src="/img/build-mascot.png" alt="Team Build">
           </div>
 
           <!-- Tap Action Sticker Container -->
@@ -211,7 +205,7 @@
         <div style="font-size: 13px; color: #ffd700; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
           👑 MULTIVERSE CHAMPIONS 👑
         </div>
-        <h1 id="victory-team-banner" class="chromatic-title" style="font-size: 32px; margin-bottom: 4px;">
+        <h1 id="victory-team-banner" class="main-title" style="font-size: 32px; margin-bottom: 4px;">
           TEAM BIT WINS!
         </h1>
         <div id="victory-sub-banner" style="font-size: 13px; color: #ffd700; font-weight: 700; margin-bottom: 16px;">

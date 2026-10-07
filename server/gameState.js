@@ -52,6 +52,19 @@ export class GameStateEngine {
 
     // Idempotent Answer Submissions: Map<"playerId:questionId", SubmissionRecord>
     this.submissions = new Map();
+
+    // Change tracking for delta-aware broadcasts
+    this._stateVersion = 0;
+    this._lastBroadcastHash = '';
+
+    // Cached question stats (invalidated on new submission)
+    this._cachedQuestionStats = null;
+    this._cachedQuestionStatsId = null;
+  }
+
+  _bumpVersion() {
+    this._stateVersion++;
+    this._cachedQuestionStats = null; // invalidate stats cache
   }
 
   /**
@@ -87,6 +100,7 @@ export class GameStateEngine {
 
       this.players.set(playerId, player);
       this.teams[teamId].playerCount++;
+      this._bumpVersion();
     } else if (nickname && nickname.trim()) {
       player.nickname = nickname.trim().slice(0, 16);
     }
@@ -104,6 +118,7 @@ export class GameStateEngine {
   startCountdown() {
     this.stage = 'COUNTDOWN';
     this.countdownSeconds = 3;
+    this._bumpVersion();
     return this.stage;
   }
 
@@ -117,6 +132,7 @@ export class GameStateEngine {
     this.stage = 'QUESTION_ACTIVE';
     this.questionStartTime = Date.now();
     this.questionDurationSec = q.timeLimitSec || 15;
+    this._bumpVersion();
     return true;
   }
 
@@ -179,6 +195,8 @@ export class GameStateEngine {
       this.unlockTeamTier(player.teamId, currentQ.id);
     }
 
+    this._bumpVersion();
+
     return {
       success: true,
       isCorrect,
@@ -212,12 +230,15 @@ export class GameStateEngine {
       this.winnerTeam = teamId;
       this.stage = 'VICTORY';
     }
+
+    this._bumpVersion();
   }
 
   revealAnswer() {
     if (this.stage === 'VICTORY') return;
     this.stage = 'QUESTION_REVEAL';
     this.revealStartTime = Date.now();
+    this._bumpVersion();
   }
 
   nextQuestion() {
@@ -246,6 +267,8 @@ export class GameStateEngine {
         this.winnerTeam = this.teams.bit.score >= this.teams.build.score ? 'bit' : 'build';
       }
     }
+
+    this._bumpVersion();
   }
 
   getTopContributors(teamId, limit = 5) {
@@ -274,6 +297,11 @@ export class GameStateEngine {
     const currentQ = this.getCurrentQuestion();
     if (!currentQ) return null;
 
+    // Return cached stats if still valid for this question
+    if (this._cachedQuestionStats && this._cachedQuestionStatsId === currentQ.id) {
+      return this._cachedQuestionStats;
+    }
+
     const stats = {
       questionId: currentQ.id,
       totalResponses: 0,
@@ -297,10 +325,54 @@ export class GameStateEngine {
       }
     }
 
+    this._cachedQuestionStats = stats;
+    this._cachedQuestionStatsId = currentQ.id;
     return stats;
   }
 
-  getBroadcastState() {
+  /**
+   * Slim team summary for player broadcasts (~50 bytes per team instead of ~500+)
+   * Players only need: score, percent, playerCount
+   */
+  _getSlimTeams() {
+    return {
+      bit: {
+        id: 'bit',
+        name: this.teams.bit.name,
+        hero: this.teams.bit.hero,
+        score: this.teams.bit.score,
+        playerCount: this.teams.bit.playerCount,
+        percent: Math.round((this.teams.bit.unlockedNodes.size / TOTAL_NODES) * 100)
+      },
+      build: {
+        id: 'build',
+        name: this.teams.build.name,
+        hero: this.teams.build.hero,
+        score: this.teams.build.score,
+        playerCount: this.teams.build.playerCount,
+        percent: Math.round((this.teams.build.unlockedNodes.size / TOTAL_NODES) * 100)
+      }
+    };
+  }
+
+  /**
+   * Full team data with unlocked node/edge arrays — ONLY for stage/admin
+   */
+  _getFullTeams() {
+    const slim = this._getSlimTeams();
+    slim.bit.unlockedTiersCount = this.teams.bit.unlockedTiers.size;
+    slim.bit.unlockedNodeIds = Array.from(this.teams.bit.unlockedNodes);
+    slim.bit.unlockedEdges = this.teams.bit.unlockedEdges;
+    slim.build.unlockedTiersCount = this.teams.build.unlockedTiers.size;
+    slim.build.unlockedNodeIds = Array.from(this.teams.build.unlockedNodes);
+    slim.build.unlockedEdges = this.teams.build.unlockedEdges;
+    return slim;
+  }
+
+  /**
+   * Common state fields shared across all client types
+   */
+  _getBaseState() {
     const currentQ = this.getCurrentQuestion();
     const remainingSec = this.stage === 'QUESTION_ACTIVE'
       ? Math.max(0, Math.ceil((this.questionDurationSec * 1000 - (Date.now() - this.questionStartTime)) / 1000))
@@ -318,30 +390,6 @@ export class GameStateEngine {
       remainingSec,
       revealRemainingSec,
       winnerTeam: this.winnerTeam,
-      teams: {
-        bit: {
-          id: 'bit',
-          name: this.teams.bit.name,
-          hero: this.teams.bit.hero,
-          score: this.teams.bit.score,
-          unlockedTiersCount: this.teams.bit.unlockedTiers.size,
-          unlockedNodeIds: Array.from(this.teams.bit.unlockedNodes),
-          unlockedEdges: this.teams.bit.unlockedEdges,
-          playerCount: this.teams.bit.playerCount,
-          percent: Math.round((this.teams.bit.unlockedNodes.size / TOTAL_NODES) * 100)
-        },
-        build: {
-          id: 'build',
-          name: this.teams.build.name,
-          hero: this.teams.build.hero,
-          score: this.teams.build.score,
-          unlockedTiersCount: this.teams.build.unlockedTiers.size,
-          unlockedNodeIds: Array.from(this.teams.build.unlockedNodes),
-          unlockedEdges: this.teams.build.unlockedEdges,
-          playerCount: this.teams.build.playerCount,
-          percent: Math.round((this.teams.build.unlockedNodes.size / TOTAL_NODES) * 100)
-        }
-      },
       onlinePlayers: this.players.size
     };
 
@@ -372,8 +420,39 @@ export class GameStateEngine {
     return state;
   }
 
+  /**
+   * Slim broadcast for phone players (~200-350 bytes)
+   * Excludes: unlockedNodeIds, unlockedEdges, unlockedTiersCount
+   */
+  getPlayerBroadcast() {
+    const state = this._getBaseState();
+    state.teams = this._getSlimTeams();
+    return state;
+  }
+
+  /**
+   * Full broadcast for stage projector & admin (~600-800 bytes)
+   * Includes the full unlocked graph arrays needed for canvas rendering
+   */
+  getStageBroadcast() {
+    const state = this._getBaseState();
+    state.teams = this._getFullTeams();
+    return state;
+  }
+
+  /**
+   * Legacy compatibility: getBroadcastState returns full state (used by tests)
+   */
+  getBroadcastState() {
+    return this.getStageBroadcast();
+  }
+
+  /**
+   * Player-specific state for JOIN and ANSWER_RESULT responses
+   * Builds on top of the slim player broadcast to avoid duplication
+   */
   getPlayerState(playerId) {
-    const base = this.getBroadcastState();
+    const base = this.getPlayerBroadcast();
     const player = this.players.get(playerId);
 
     if (player) {
