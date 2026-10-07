@@ -27,7 +27,7 @@ const ADMIN_PASSKEY = process.env.ADMIN_KEY || 'spiderverse';
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server, maxPayload: 2048 });
 
 const engine = new GameStateEngine();
 // High burst tokens (600) to support 200-500 phones scanning QR simultaneously from the same venue Wi-Fi / NAT
