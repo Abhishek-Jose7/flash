@@ -15,28 +15,28 @@ export class GameStateEngine {
     this.countdownSeconds = 3;
     this.winnerTeam = null;
 
-    // Teams Definition
+    // Two Teams: Team Bit (Miles Morales Red) vs Team Build (Spider-Gwen Pink/Teal)
     this.teams = {
-      miles: {
-        id: 'miles',
-        name: 'Team Miles Morales',
-        shortName: 'Miles',
+      bit: {
+        id: 'bit',
+        name: 'TEAM BIT',
+        hero: 'Miles Morales',
         themeColor: '#ff003b',
         secondaryColor: '#00f0ff',
-        bgDark: '#0e0408',
+        bgDark: '#0a0307',
         score: 0,
         unlockedTiers: new Set(),
         unlockedNodes: new Set(),
         unlockedEdges: [],
         playerCount: 0
       },
-      gwen: {
-        id: 'gwen',
-        name: 'Team Spider-Gwen',
-        shortName: 'Gwen',
+      build: {
+        id: 'build',
+        name: 'TEAM BUILD',
+        hero: 'Spider-Gwen',
         themeColor: '#ff007f',
         secondaryColor: '#00f0ff',
-        bgDark: '#040b12',
+        bgDark: '#03080f',
         score: 0,
         unlockedTiers: new Set(),
         unlockedNodes: new Set(),
@@ -50,9 +50,6 @@ export class GameStateEngine {
 
     // Idempotent Answer Submissions: Map<"playerId:questionId", SubmissionRecord>
     this.submissions = new Map();
-
-    // Track active connection count
-    this.connectedSockets = new Set();
   }
 
   /**
@@ -61,16 +58,16 @@ export class GameStateEngine {
   registerPlayer(playerId, nickname, preferredTeam = null) {
     let player = this.players.get(playerId);
     if (!player) {
-      // Auto-balance teams if not preferred or invalid
+      // Auto-balance teams
       let teamId = preferredTeam;
       if (!teamId || !this.teams[teamId]) {
-        teamId = this.teams.miles.playerCount <= this.teams.gwen.playerCount ? 'miles' : 'gwen';
+        teamId = this.teams.bit.playerCount <= this.teams.build.playerCount ? 'bit' : 'build';
       }
 
       const spiderHandles = [
-        'Web-Slinger', 'Wall-Crawler', 'Venom-Surge', 'Dimension-Hop',
-        'Spider-Byte', 'Punk-Rocker', 'Ghost-Spider', 'Arachno-Kid',
-        'Spidey-Sense', 'Shadow-Spider', 'Neon-Crawler', 'Bio-Electric'
+        'Cyber-Slinger', 'Bit-Crawler', 'Bug-Hunter', 'Syntax-Spidey',
+        'Stack-Overload', 'Glitch-Spider', 'Web-Architect', 'Ghost-Dev',
+        'Kernel-Panic', 'Async-Spidey', 'Neon-Byte', 'Null-Pointer'
       ];
       const randomSuffix = Math.floor(10 + Math.random() * 90);
       const cleanNick = (nickname && nickname.trim().slice(0, 16)) ||
@@ -102,18 +99,12 @@ export class GameStateEngine {
     return null;
   }
 
-  /**
-   * Start 3-second countdown before a question
-   */
   startCountdown() {
     this.stage = 'COUNTDOWN';
     this.countdownSeconds = 3;
     return this.stage;
   }
 
-  /**
-   * Launch question
-   */
   activateQuestion(index = null) {
     if (index !== null) {
       this.currentQuestionIndex = Math.max(0, Math.min(index, this.questions.length - 1));
@@ -127,9 +118,6 @@ export class GameStateEngine {
     return true;
   }
 
-  /**
-   * Idempotent Answer Submission with Atomic Scoring
-   */
   submitAnswer(playerId, questionId, optionIndex) {
     if (this.stage !== 'QUESTION_ACTIVE') {
       return { success: false, reason: 'QUESTION_NOT_ACTIVE' };
@@ -158,8 +146,8 @@ export class GameStateEngine {
     let points = 0;
     if (isCorrect) {
       const maxPoints = 1000;
-      const speedDeduction = Math.floor(timeElapsedMs * 0.05); // -50 pts per sec
-      points = Math.max(150, maxPoints - speedDeduction);
+      const speedDeduction = Math.floor(timeElapsedMs * 0.05);
+      points = Math.max(200, maxPoints - speedDeduction);
     }
 
     const submission = {
@@ -173,7 +161,6 @@ export class GameStateEngine {
       timestamp: now
     };
 
-    // Store submission
     this.submissions.set(subKey, submission);
 
     // Atomic updates to player
@@ -186,7 +173,7 @@ export class GameStateEngine {
       const team = this.teams[player.teamId];
       team.score += points;
 
-      // Unlock tier for team if not yet unlocked
+      // Unlock tier for team
       this.unlockTeamTier(player.teamId, currentQ.id);
     }
 
@@ -199,9 +186,6 @@ export class GameStateEngine {
     };
   }
 
-  /**
-   * Unlock tier for a team based on tier index (1..8)
-   */
   unlockTeamTier(teamId, tierIndex) {
     const team = this.teams[teamId];
     if (!team) return;
@@ -211,12 +195,9 @@ export class GameStateEngine {
 
     team.unlockedTiers.add(tierIndex);
 
-    // Add nodes
     tierData.nodes.forEach(nId => team.unlockedNodes.add(nId));
 
-    // Add edges
     tierData.edges.forEach(edge => {
-      // Avoid duplicate edge entries
       const exists = team.unlockedEdges.some(
         e => (e[0] === edge[0] && e[1] === edge[1]) || (e[0] === edge[1] && e[1] === edge[0])
       );
@@ -225,24 +206,17 @@ export class GameStateEngine {
       }
     });
 
-    // Check 100% completion trigger
     if (team.unlockedTiers.size === UNLOCK_TIERS.length && !this.winnerTeam) {
       this.winnerTeam = teamId;
       this.stage = 'VICTORY';
     }
   }
 
-  /**
-   * Reveal question answer & stats
-   */
   revealAnswer() {
     if (this.stage === 'VICTORY') return;
     this.stage = 'QUESTION_REVEAL';
   }
 
-  /**
-   * Advance to next question or trigger VICTORY if last
-   */
   nextQuestion() {
     if (this.currentQuestionIndex + 1 < this.questions.length) {
       this.currentQuestionIndex++;
@@ -254,31 +228,23 @@ export class GameStateEngine {
     }
   }
 
-  /**
-   * Trigger Victory & determine winner deterministically
-   */
   triggerVictory() {
     this.stage = 'VICTORY';
 
     if (!this.winnerTeam) {
-      // Compare unlocked tiers count first, then total score
-      const milesTiers = this.teams.miles.unlockedTiers.size;
-      const gwenTiers = this.teams.gwen.unlockedTiers.size;
+      const bitTiers = this.teams.bit.unlockedTiers.size;
+      const buildTiers = this.teams.build.unlockedTiers.size;
 
-      if (milesTiers > gwenTiers) {
-        this.winnerTeam = 'miles';
-      } else if (gwenTiers > milesTiers) {
-        this.winnerTeam = 'gwen';
+      if (bitTiers > buildTiers) {
+        this.winnerTeam = 'bit';
+      } else if (buildTiers > bitTiers) {
+        this.winnerTeam = 'build';
       } else {
-        // Tie breaker by team score
-        this.winnerTeam = this.teams.miles.score >= this.teams.gwen.score ? 'miles' : 'gwen';
+        this.winnerTeam = this.teams.bit.score >= this.teams.build.score ? 'bit' : 'build';
       }
     }
   }
 
-  /**
-   * Get Top-5 contributors for a team
-   */
   getTopContributors(teamId, limit = 5) {
     const teamPlayers = [];
     for (const p of this.players.values()) {
@@ -301,9 +267,6 @@ export class GameStateEngine {
     return teamPlayers.slice(0, limit);
   }
 
-  /**
-   * Question submission stats for the current question
-   */
   getCurrentQuestionStats() {
     const currentQ = this.getCurrentQuestion();
     if (!currentQ) return null;
@@ -313,8 +276,8 @@ export class GameStateEngine {
       totalResponses: 0,
       correctResponses: 0,
       optionCounts: [0, 0, 0, 0],
-      milesCorrect: 0,
-      gwenCorrect: 0
+      bitCorrect: 0,
+      buildCorrect: 0
     };
 
     for (const [key, sub] of this.submissions.entries()) {
@@ -325,8 +288,8 @@ export class GameStateEngine {
         }
         if (sub.isCorrect) {
           stats.correctResponses++;
-          if (sub.teamId === 'miles') stats.milesCorrect++;
-          if (sub.teamId === 'gwen') stats.gwenCorrect++;
+          if (sub.teamId === 'bit') stats.bitCorrect++;
+          if (sub.teamId === 'build') stats.buildCorrect++;
         }
       }
     }
@@ -334,9 +297,6 @@ export class GameStateEngine {
     return stats;
   }
 
-  /**
-   * Compact serialization for client synchronization
-   */
   getBroadcastState() {
     const currentQ = this.getCurrentQuestion();
     const remainingSec = this.stage === 'QUESTION_ACTIVE'
@@ -351,25 +311,27 @@ export class GameStateEngine {
       remainingSec,
       winnerTeam: this.winnerTeam,
       teams: {
-        miles: {
-          id: 'miles',
-          name: this.teams.miles.name,
-          score: this.teams.miles.score,
-          unlockedTiersCount: this.teams.miles.unlockedTiers.size,
-          unlockedNodeIds: Array.from(this.teams.miles.unlockedNodes),
-          unlockedEdges: this.teams.miles.unlockedEdges,
-          playerCount: this.teams.miles.playerCount,
-          percent: Math.round((this.teams.miles.unlockedNodes.size / TOTAL_NODES) * 100)
+        bit: {
+          id: 'bit',
+          name: this.teams.bit.name,
+          hero: this.teams.bit.hero,
+          score: this.teams.bit.score,
+          unlockedTiersCount: this.teams.bit.unlockedTiers.size,
+          unlockedNodeIds: Array.from(this.teams.bit.unlockedNodes),
+          unlockedEdges: this.teams.bit.unlockedEdges,
+          playerCount: this.teams.bit.playerCount,
+          percent: Math.round((this.teams.bit.unlockedNodes.size / TOTAL_NODES) * 100)
         },
-        gwen: {
-          id: 'gwen',
-          name: this.teams.gwen.name,
-          score: this.teams.gwen.score,
-          unlockedTiersCount: this.teams.gwen.unlockedTiers.size,
-          unlockedNodeIds: Array.from(this.teams.gwen.unlockedNodes),
-          unlockedEdges: this.teams.gwen.unlockedEdges,
-          playerCount: this.teams.gwen.playerCount,
-          percent: Math.round((this.teams.gwen.unlockedNodes.size / TOTAL_NODES) * 100)
+        build: {
+          id: 'build',
+          name: this.teams.build.name,
+          hero: this.teams.build.hero,
+          score: this.teams.build.score,
+          unlockedTiersCount: this.teams.build.unlockedTiers.size,
+          unlockedNodeIds: Array.from(this.teams.build.unlockedNodes),
+          unlockedEdges: this.teams.build.unlockedEdges,
+          playerCount: this.teams.build.playerCount,
+          percent: Math.round((this.teams.build.unlockedNodes.size / TOTAL_NODES) * 100)
         }
       },
       onlinePlayers: this.players.size
@@ -378,13 +340,14 @@ export class GameStateEngine {
     if (currentQ) {
       state.question = {
         id: currentQ.id,
+        difficulty: currentQ.difficulty,
+        category: currentQ.category,
         text: currentQ.question,
         options: currentQ.options,
         timeLimitSec: currentQ.timeLimitSec,
         spiderPart: currentQ.spiderPart
       };
 
-      // Only reveal correctIndex during QUESTION_REVEAL or VICTORY
       if (this.stage === 'QUESTION_REVEAL' || this.stage === 'VICTORY') {
         state.question.correctIndex = currentQ.correctIndex;
         state.questionStats = this.getCurrentQuestionStats();
@@ -393,17 +356,14 @@ export class GameStateEngine {
 
     if (this.stage === 'VICTORY') {
       state.topContributors = {
-        miles: this.getTopContributors('miles', 5),
-        gwen: this.getTopContributors('gwen', 5)
+        bit: this.getTopContributors('bit', 5),
+        build: this.getTopContributors('build', 5)
       };
     }
 
     return state;
   }
 
-  /**
-   * Personalized state payload for a specific player
-   */
   getPlayerState(playerId) {
     const base = this.getBroadcastState();
     const player = this.players.get(playerId);

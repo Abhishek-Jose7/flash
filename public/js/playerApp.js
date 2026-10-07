@@ -12,17 +12,22 @@ class PlayerApp {
     this.selectedOption = null;
     this.hasAnswered = false;
 
-    // Canvas visualizer instance
+    // Spider Canvas Renderer instance
     this.spiderRenderer = null;
 
-    // DOM Elements
+    // Screens
     this.screens = {
       join: document.getElementById('screen-join'),
       lobby: document.getElementById('screen-lobby'),
-      countdown: document.getElementById('screen-countdown'),
-      question: document.getElementById('screen-question'),
-      result: document.getElementById('screen-result'),
+      game: document.getElementById('screen-game'),
       victory: document.getElementById('screen-victory')
+    };
+
+    // Sub-views inside screen-game
+    this.gameViews = {
+      countdown: document.getElementById('view-countdown'),
+      question: document.getElementById('view-question'),
+      reveal: document.getElementById('view-reveal')
     };
 
     this.bindEvents();
@@ -33,10 +38,21 @@ class PlayerApp {
   getOrCreatePlayerId() {
     let id = localStorage.getItem('spider_player_id');
     if (!id) {
-      id = 'p_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+      id = 'p_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
       localStorage.setItem('spider_player_id', id);
     }
     return id;
+  }
+
+  generateRandomNickname() {
+    const handles = [
+      'Cyber-Slinger', 'Bit-Crawler', 'Glitch-Spider', 'Web-Architect',
+      'Kernel-Spidey', 'Async-Slinger', 'Neon-Byte', 'Null-Pointer',
+      'Ghost-Spider', 'Syntax-Crawler', 'Bug-Buster', 'Quantum-Spidey'
+    ];
+    const randHandle = handles[Math.floor(Math.random() * handles.length)];
+    const randNum = Math.floor(10 + Math.random() * 90);
+    return `${randHandle}-${randNum}`;
   }
 
   initCanvas() {
@@ -48,16 +64,27 @@ class PlayerApp {
   }
 
   bindEvents() {
+    // Nickname generator dice
+    const btnDice = document.getElementById('btn-dice-nick');
+    const inputNick = document.getElementById('input-nick');
+    if (btnDice && inputNick) {
+      btnDice.addEventListener('click', () => {
+        sound.init();
+        sound.playTap();
+        inputNick.value = this.generateRandomNickname();
+      });
+    }
+
     // Join button
     const btnJoin = document.getElementById('btn-join');
-    const inputNick = document.getElementById('input-nick');
     if (btnJoin && inputNick) {
       if (this.nickname) inputNick.value = this.nickname;
+      else inputNick.value = this.generateRandomNickname();
 
       const submitJoin = () => {
         sound.init();
         sound.playThwip();
-        this.nickname = inputNick.value.trim() || 'Spider-Slinger';
+        this.nickname = inputNick.value.trim() || this.generateRandomNickname();
         localStorage.setItem('spider_nick', this.nickname);
         this.sendJoin();
       };
@@ -71,9 +98,9 @@ class PlayerApp {
     // MCQ Answer Buttons
     const mcqBtns = document.querySelectorAll('.mcq-btn');
     mcqBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         const opt = parseInt(btn.dataset.opt, 10);
-        this.submitAnswer(opt);
+        this.submitAnswer(opt, e);
       });
     });
 
@@ -94,10 +121,13 @@ class PlayerApp {
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      document.getElementById('conn-status').textContent = '⚡ CONNECTED';
-      document.getElementById('conn-status').style.color = '#00ff66';
+      const connStatus = document.getElementById('conn-status');
+      if (connStatus) {
+        connStatus.textContent = '⚡ CONNECTED TO MULTIVERSE';
+        connStatus.style.color = '#00ff66';
+      }
 
-      // Re-join if we already have identity
+      // Automatically re-join if player identity already exists in localStorage
       if (this.nickname) {
         this.sendJoin();
       }
@@ -113,8 +143,11 @@ class PlayerApp {
     };
 
     this.ws.onclose = () => {
-      document.getElementById('conn-status').textContent = '⚠️ RECONNECTING...';
-      document.getElementById('conn-status').style.color = '#ffcc00';
+      const connStatus = document.getElementById('conn-status');
+      if (connStatus) {
+        connStatus.textContent = '⚠️ RECONNECTING TO MULTIVERSE...';
+        connStatus.style.color = '#ffcc00';
+      }
       setTimeout(() => this.connectWebSocket(), 1500);
     };
 
@@ -133,7 +166,7 @@ class PlayerApp {
     }
   }
 
-  submitAnswer(opt) {
+  submitAnswer(opt, event = null) {
     if (this.hasAnswered || !this.state || this.state.stage !== 'QUESTION_ACTIVE') return;
 
     sound.playTap();
@@ -152,6 +185,9 @@ class PlayerApp {
       }
     });
 
+    // Spawn comic sticker pop effect near click
+    this.spawnComicSticker(event);
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
         type: 'SUBMIT_ANSWER',
@@ -159,6 +195,24 @@ class PlayerApp {
         optionIndex: opt
       }));
     }
+  }
+
+  spawnComicSticker(event) {
+    const container = document.getElementById('sticker-container');
+    if (!container) return;
+
+    const img = document.createElement('img');
+    img.src = Math.random() > 0.4 ? '/img/sticker-thwip.svg' : '/img/sticker-boom.svg';
+    img.className = 'comic-sticker';
+
+    // Position sticker randomly across the lower panel
+    const x = Math.floor(20 + Math.random() * 55);
+    const y = Math.floor(15 + Math.random() * 45);
+    img.style.left = `${x}%`;
+    img.style.top = `${y}%`;
+
+    container.appendChild(img);
+    setTimeout(() => img.remove(), 700);
   }
 
   handleMessage(msg) {
@@ -210,32 +264,55 @@ class PlayerApp {
   updatePlayerUI() {
     if (!this.player) return;
 
-    // Apply team theme to body
-    document.body.className = `team-${this.player.teamId}`;
+    const isBit = this.player.teamId === 'bit';
 
+    // Update body theme classes
+    document.body.className = isBit ? 'team-bit' : 'team-build';
+
+    // Header status bar
     const teamNameEl = document.getElementById('user-team-name');
+    const teamDotEl = document.getElementById('user-team-dot');
     const userScoreEl = document.getElementById('user-score-val');
     const userNickEl = document.getElementById('user-nick-display');
 
     if (teamNameEl) {
-      teamNameEl.textContent = this.player.teamId === 'miles' ? 'MILES MORALES' : 'SPIDER-GWEN';
-      teamNameEl.style.color = this.player.teamId === 'miles' ? '#ff003b' : '#ff007f';
+      teamNameEl.textContent = isBit ? 'TEAM BIT (MILES)' : 'TEAM BUILD (GWEN)';
+      teamNameEl.style.color = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
     }
-    if (userScoreEl) userScoreEl.textContent = this.player.score.toLocaleString();
+    if (teamDotEl) {
+      teamDotEl.style.background = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
+    }
+    if (userScoreEl) userScoreEl.textContent = (this.player.score || 0).toLocaleString();
     if (userNickEl) userNickEl.textContent = this.player.nickname;
 
+    // Lobby screen info
+    const lobbyTitle = document.getElementById('lobby-team-title');
+    const lobbyHero = document.getElementById('lobby-team-hero');
+    const lobbyMascot = document.getElementById('lobby-mascot-img');
+
+    if (lobbyTitle) {
+      lobbyTitle.textContent = isBit ? 'YOU ARE ON TEAM BIT' : 'YOU ARE ON TEAM BUILD';
+      lobbyTitle.style.color = isBit ? 'var(--bit-red)' : 'var(--build-pink)';
+    }
+    if (lobbyHero) {
+      lobbyHero.textContent = isBit ? 'Fighting alongside Miles Morales' : 'Fighting alongside Spider-Gwen';
+    }
+    if (lobbyMascot) {
+      lobbyMascot.src = isBit ? '/img/chibi-miles.svg' : '/img/chibi-gwen.svg';
+    }
+
+    // Set Spider Canvas Theme
     if (this.spiderRenderer) {
-      if (this.player.teamId === 'miles') {
+      if (isBit) {
         this.spiderRenderer.setTheme('#ff003b', '#00f0ff', 'rgba(255, 0, 59, 0.8)');
       } else {
-        this.spiderRenderer.setTheme('#ff007f', '#00f0ff', 'rgba(255, 0, 127, 0.8)');
+        this.spiderRenderer.setTheme('#ff007f', '#00e5ff', 'rgba(255, 0, 127, 0.8)');
       }
     }
   }
 
   updateState(state) {
     if (!state) return;
-    const prevStage = this.state ? this.state.stage : null;
     this.state = state;
 
     if (state.player) {
@@ -243,7 +320,7 @@ class PlayerApp {
       this.updatePlayerUI();
     }
 
-    // Update Spider Canvas for player's team
+    // Update Spider Canvas for current player's team
     if (this.spiderRenderer && this.player && state.teams) {
       const myTeam = state.teams[this.player.teamId];
       if (myTeam) {
@@ -251,38 +328,50 @@ class PlayerApp {
       }
     }
 
-    // Update Team Progress Ribbons
+    // Update Live Battle Bar & Percentages
     if (state.teams) {
-      const milesFill = document.getElementById('miles-bar-fill');
-      const milesVal = document.getElementById('miles-pct-val');
-      const gwenFill = document.getElementById('gwen-bar-fill');
-      const gwenVal = document.getElementById('gwen-pct-val');
+      const bitFill = document.getElementById('bit-bar-fill');
+      const bitVal = document.getElementById('bit-pct-val');
+      const buildFill = document.getElementById('build-bar-fill');
+      const buildVal = document.getElementById('build-pct-val');
+      const lobbyCount = document.getElementById('lobby-online-count');
 
-      if (milesFill) milesFill.style.width = `${state.teams.miles.percent}%`;
-      if (milesVal) milesVal.textContent = `${state.teams.miles.percent}% (${state.teams.miles.score} PTS)`;
+      const bitPct = state.teams.bit ? state.teams.bit.percent : 0;
+      const buildPct = state.teams.build ? state.teams.build.percent : 0;
 
-      if (gwenFill) gwenFill.style.width = `${state.teams.gwen.percent}%`;
-      if (gwenVal) gwenVal.textContent = `${state.teams.gwen.percent}% (${state.teams.gwen.score} PTS)`;
+      if (bitFill) bitFill.style.width = `${bitPct}%`;
+      if (bitVal) bitVal.textContent = `BIT: ${bitPct}%`;
+
+      if (buildFill) buildFill.style.width = `${buildPct}%`;
+      if (buildVal) buildVal.textContent = `BUILD: ${buildPct}%`;
+
+      if (lobbyCount) {
+        lobbyCount.textContent = (state.onlinePlayers || 0);
+      }
     }
 
     // Stage Routing
-    this.renderStage(state, prevStage);
+    this.renderStage(state);
   }
 
   showScreen(name) {
     for (const [key, el] of Object.entries(this.screens)) {
       if (el) {
-        if (key === name) {
-          el.classList.add('active');
-        } else {
-          el.classList.remove('active');
-        }
+        if (key === name) el.classList.add('active');
+        else el.classList.remove('active');
       }
     }
   }
 
-  renderStage(state, prevStage) {
-    // If player is not registered yet, stay on join screen
+  showGameView(viewName) {
+    for (const [key, el] of Object.entries(this.gameViews)) {
+      if (el) {
+        el.style.display = (key === viewName) ? (key === 'question' ? 'flex' : 'flex') : 'none';
+      }
+    }
+  }
+
+  renderStage(state) {
     if (!this.player) {
       this.showScreen('join');
       return;
@@ -295,7 +384,9 @@ class PlayerApp {
       }
 
       case 'COUNTDOWN': {
-        this.showScreen('countdown');
+        this.showScreen('game');
+        this.showGameView('countdown');
+
         const countEl = document.getElementById('countdown-num');
         if (countEl) {
           countEl.textContent = state.countdown;
@@ -307,24 +398,28 @@ class PlayerApp {
       }
 
       case 'QUESTION_ACTIVE': {
-        this.showScreen('question');
+        this.showScreen('game');
+        this.showGameView('question');
+
         const q = state.question;
         if (q) {
-          document.getElementById('q-part-tag').textContent = `PART: ${q.spiderPart || 'SPIDER NODE'}`;
+          document.getElementById('q-meta-round').textContent = `ROUND ${state.qIndex + 1} / ${state.totalQuestions}`;
+          document.getElementById('q-category-badge').textContent = q.category || 'TECH';
+          document.getElementById('q-difficulty-badge').textContent = q.difficulty || 'MEDIUM';
+          document.getElementById('q-part-tag').textContent = `TARGET: ${q.spiderPart || 'SPIDER NODE'}`;
           document.getElementById('q-text').textContent = q.text;
 
           // Render Options
           const btns = document.querySelectorAll('.mcq-btn');
           btns.forEach((btn, idx) => {
             const label = btn.querySelector('.mcq-label');
-            if (label && q.options[idx]) {
+            if (label && q.options && q.options[idx]) {
               label.textContent = q.options[idx];
             }
-            // Reset selection state
             btn.classList.remove('selected', 'dimmed', 'correct-highlight');
           });
 
-          // If player already answered (reconnect)
+          // Re-highlight if reconnecting
           if (state.playerAnswer) {
             this.hasAnswered = true;
             const chosen = state.playerAnswer.optionIndex;
@@ -345,7 +440,9 @@ class PlayerApp {
       }
 
       case 'QUESTION_REVEAL': {
-        this.showScreen('result');
+        this.showScreen('game');
+        this.showGameView('reveal');
+
         const q = state.question;
         const resTitle = document.getElementById('reveal-title');
         const resSub = document.getElementById('reveal-sub');
@@ -353,21 +450,33 @@ class PlayerApp {
 
         if (state.playerAnswer) {
           if (state.playerAnswer.isCorrect) {
-            resBox.className = 'reveal-box correct';
-            resTitle.textContent = '⚡ THWIP! CORRECT!';
-            resTitle.style.color = '#00ff66';
-            resSub.textContent = `+${state.playerAnswer.points} Points added to ${this.player.teamId === 'miles' ? 'Team Miles' : 'Team Gwen'}!`;
+            if (resBox) resBox.className = 'reveal-box correct';
+            if (resTitle) {
+              resTitle.textContent = '⚡ THWIP! CORRECT!';
+              resTitle.style.color = '#00ff66';
+            }
+            if (resSub) {
+              resSub.textContent = `+${state.playerAnswer.points} Points added to ${this.player.teamId === 'bit' ? 'Team Bit' : 'Team Build'}!`;
+            }
           } else {
-            resBox.className = 'reveal-box';
-            resTitle.textContent = '🕸️ MISSED!';
-            resTitle.style.color = '#ff003b';
-            resSub.textContent = `Correct answer was: "${q ? q.options[q.correctIndex] : ''}"`;
+            if (resBox) resBox.className = 'reveal-box wrong';
+            if (resTitle) {
+              resTitle.textContent = '🕸️ MISSED!';
+              resTitle.style.color = '#ff003b';
+            }
+            if (resSub) {
+              resSub.textContent = `Correct answer was: "${q ? q.options[q.correctIndex] : ''}"`;
+            }
           }
         } else {
-          resBox.className = 'reveal-box';
-          resTitle.textContent = '⏳ TIME UP!';
-          resTitle.style.color = '#ffcc00';
-          resSub.textContent = `Correct answer: "${q ? q.options[q.correctIndex] : ''}"`;
+          if (resBox) resBox.className = 'reveal-box';
+          if (resTitle) {
+            resTitle.textContent = '⏳ TIME UP!';
+            resTitle.style.color = '#ffcc00';
+          }
+          if (resSub) {
+            resSub.textContent = `Correct answer was: "${q ? q.options[q.correctIndex] : ''}"`;
+          }
         }
         break;
       }
@@ -377,22 +486,22 @@ class PlayerApp {
         sound.playVictory();
 
         const winBanner = document.getElementById('victory-team-banner');
+        const winSub = document.getElementById('victory-sub-banner');
         const isWinner = state.winnerTeam === this.player.teamId;
 
         if (winBanner) {
-          const winName = state.winnerTeam === 'miles' ? 'TEAM MILES MORALES' : 'TEAM SPIDER-GWEN';
-          winBanner.textContent = `${winName} WINS!`;
-          winBanner.style.color = state.winnerTeam === 'miles' ? '#ff003b' : '#ff007f';
+          const winName = state.winnerTeam === 'bit' ? 'TEAM BIT WINS!' : 'TEAM BUILD WINS!';
+          winBanner.textContent = winName;
+          winBanner.style.color = state.winnerTeam === 'bit' ? 'var(--bit-red)' : 'var(--build-pink)';
         }
 
-        const winSub = document.getElementById('victory-sub-banner');
         if (winSub) {
           winSub.textContent = isWinner
             ? '🏆 YOUR TEAM FULLY ASSEMBLED THE AMAZING SPIDER-MAN!'
-            : '🕸️ GLORIOUS BATTLE! The Multiverse is saved!';
+            : '🕸️ VALIANT EFFORT! The Spider-Verse is saved!';
         }
 
-        // Render Top 5 MVPs for the winning team
+        // Populate Top 5 MVPs from the winning team
         const top5List = document.getElementById('top5-list-mvp');
         if (top5List && state.topContributors && state.winnerTeam) {
           const mvps = state.topContributors[state.winnerTeam] || [];
@@ -400,7 +509,7 @@ class PlayerApp {
             <li class="top5-item ${idx === 0 ? 'rank-1' : ''}">
               <span class="top5-rank">#${idx + 1}</span>
               <span class="top5-name">${mvp.nickname} ${mvp.id === this.player.id ? '⭐ (YOU)' : ''}</span>
-              <span class="top5-score">${mvp.score.toLocaleString()} PTS</span>
+              <span class="top5-score">${(mvp.score || 0).toLocaleString()} PTS</span>
             </li>
           `).join('');
         }
@@ -413,7 +522,7 @@ class PlayerApp {
   }
 }
 
-// Start player app
+// Start player app on DOM ready
 window.addEventListener('DOMContentLoaded', () => {
   new PlayerApp();
 });

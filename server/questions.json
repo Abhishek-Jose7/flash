@@ -1,66 +1,82 @@
 [
   {
     "id": 1,
-    "question": "What is Miles Morales' iconic signature venom power?",
-    "options": ["Venom Strike (Bio-Electricity)", "Web Camouflage", "Spider-Sense Negation", "Sonic Shriek"],
-    "correctIndex": 0,
+    "difficulty": "EASY",
+    "category": "PYTHON",
+    "question": "In Python, which keyword is used to define a function?",
+    "options": ["func", "def", "function", "define"],
+    "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Thorax & Core Spine"
+    "spiderPart": "Head & Fangs Awoken"
   },
   {
     "id": 2,
-    "question": "Which dimension is Spider-Gwen (Gwen Stacy) from?",
-    "options": ["Earth-616", "Earth-65", "Earth-1610", "Earth-8311"],
-    "correctIndex": 1,
+    "difficulty": "EASY",
+    "category": "WEB DEV",
+    "question": "What does CSS stand for in web development?",
+    "options": ["Computer Style Sheets", "Creative Styling System", "Cascading Style Sheets", "Central Sheet Styles"],
+    "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Inner Web Matrix"
+    "spiderPart": "Thorax Core & Spine"
   },
   {
     "id": 3,
-    "question": "What famous motto did Uncle Ben impart to Peter Parker?",
-    "options": ["With great power comes great responsibility", "No good deed goes unpunished", "I am Spider-Man", "Anyone can wear the mask"],
-    "correctIndex": 0,
+    "difficulty": "MEDIUM",
+    "category": "GIT",
+    "question": "Which Git command creates a new branch AND immediately switches to it?",
+    "options": ["git branch -new <name>", "git checkout -b <name>", "git switch --make <name>", "git create <name>"],
+    "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Upper Left & Right Knees"
+    "spiderPart": "Abdomen Needle Blade"
   },
   {
     "id": 4,
-    "question": "Who created the Spider-Society in 'Across the Spider-Verse'?",
-    "options": ["Peter B. Parker", "Spider-Punk (Hobie Brown)", "Miguel O'Hara (Spider-Man 2099)", "Pavitr Prabhakar"],
+    "difficulty": "MEDIUM",
+    "category": "JAVASCRIPT",
+    "question": "In JavaScript, what does `typeof NaN` evaluate to?",
+    "options": ["'undefined'", "'NaN'", "'number'", "'object'"],
     "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Upper Web Arches"
+    "spiderPart": "Upper Leg Tendons"
   },
   {
     "id": 5,
-    "question": "What musical instrument does Spider-Gwen play in her band?",
-    "options": ["Lead Guitar", "Drums", "Bass", "Keyboards"],
-    "correctIndex": 1,
+    "difficulty": "MEDIUM",
+    "category": "CS & ALGORITHMS",
+    "question": "What is the average time complexity of searching a key in a Hash Map?",
+    "options": ["O(log n)", "O(n)", "O(1)", "O(n²)"],
+    "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Upper Claws Fully Deployed"
+    "spiderPart": "Upper Arches & Talons"
   },
   {
     "id": 6,
-    "question": "What is the primary power of the supervillain 'The Spot'?",
-    "options": ["Gravity Manipulation", "Interdimensional Dark-Matter Portals", "Electric Shockwaves", "Shape Shifting"],
+    "difficulty": "HARD",
+    "category": "NETWORKING",
+    "question": "Which humorous HTTP status code officially means 'I'm a teapot'?",
+    "options": ["404", "418", "500", "420"],
     "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Lower Joint Shockwave"
+    "spiderPart": "Lower Leg Roots"
   },
   {
     "id": 7,
-    "question": "What phrase completes: 'It's a leap of...'?",
-    "options": ["Courage", "Destiny", "Faith", "Action"],
+    "difficulty": "HARD",
+    "category": "DATA STRUCTURES",
+    "question": "Which data structure operates strictly on the LIFO (Last In, First Out) principle?",
+    "options": ["Queue", "Binary Tree", "Stack", "Linked List"],
     "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Venom Shafts Primed"
+    "spiderPart": "Lateral Spider Claws"
   },
   {
     "id": 8,
-    "question": "What gives EVERY Spider-Person their destiny across the Multiverse?",
-    "options": ["The Web of Life & Destiny", "The Infinity Stones", "Oscorp Super-Soldier Serum", "Cosmic Radiation"],
-    "correctIndex": 0,
+    "difficulty": "HARD - BOSS ROUND",
+    "category": "JS CORE",
+    "question": "In JavaScript, what does `===` compare that `==` does NOT?",
+    "options": ["Memory pointer address", "Both Value and Data Type (Strict)", "Object prototypes", "Execution context scope"],
+    "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "AMAZING SPIDER-MAN 100% COMPLETE"
+    "spiderPart": "AMAZING SPIDER-MAN 2 100% COMPLETE"
   }
 ]

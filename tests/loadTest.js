@@ -132,18 +132,18 @@ async function runLoadTest() {
   console.log(`-----------------------------------------------`);
   console.log(`🎯 Successful Atomic Answers Processed: ${answersSubmitted}`);
   console.log(`🛡️ Double-Tap Submissions Blocked (Idempotency): ${duplicateRejections}`);
-  console.log(`🔴 Team Miles Score: ${engine.teams.miles.score} PTS (${engine.teams.miles.playerCount} players)`);
-  console.log(`🔵 Team Gwen Score:  ${engine.teams.gwen.score} PTS (${engine.teams.gwen.playerCount} players)`);
-  console.log(`🕷️ Team Miles Spider Unlocked Nodes: ${engine.teams.miles.unlockedNodes.size}/48`);
-  console.log(`🕷️ Team Gwen Spider Unlocked Nodes:  ${engine.teams.gwen.unlockedNodes.size}/48`);
+  console.log(`🔴 Team Bit Score:   ${engine.teams.bit.score} PTS (${engine.teams.bit.playerCount} players)`);
+  console.log(`🔵 Team Build Score: ${engine.teams.build.score} PTS (${engine.teams.build.playerCount} players)`);
+  console.log(`🕷️ Team Bit Spider Unlocked Nodes:   ${engine.teams.bit.unlockedNodes.size}/48`);
+  console.log(`🕷️ Team Build Spider Unlocked Nodes: ${engine.teams.build.unlockedNodes.size}/48`);
 
-  const top5Miles = engine.getTopContributors('miles', 5);
-  console.log(`\n🏆 Team Miles Top 5 MVPs:`);
-  top5Miles.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
+  const top5Bit = engine.getTopContributors('bit', 5);
+  console.log(`\n🏆 Team Bit Top 5 MVPs:`);
+  top5Bit.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
 
-  const top5Gwen = engine.getTopContributors('gwen', 5);
-  console.log(`\n🏆 Team Gwen Top 5 MVPs:`);
-  top5Gwen.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
+  const top5Build = engine.getTopContributors('build', 5);
+  console.log(`\n🏆 Team Build Top 5 MVPs:`);
+  top5Build.forEach((m, idx) => console.log(`   #${idx + 1} ${m.nickname}: ${m.score} pts (${m.correctCount} correct)`));
 
   // Check memory usage
   const mem = process.memoryUsage();

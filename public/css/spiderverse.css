@@ -1,30 +1,33 @@
 /* ==========================================================================
-   SPIDER-VERSE THEME SYSTEM: PURE CSS, ZERO EXTERNAL DEPENDENCIES
-   Halftone Comic Overlays, Chromatic Aberration, Neon Pulses & Action Bursts
+   SPIDER-VERSE COMIC DESIGN SYSTEM: AUTHENTIC MULTIVERSE AESTHETICS
+   Ben-Day Halftone, Chromatic Glitches, Animated Chibi Spideys, Split Mobile HUD
    ========================================================================== */
 
 :root {
-  --bg-void: #07060b;
-  --bg-panel: #110e1a;
-  --bg-card: rgba(22, 17, 33, 0.85);
+  --bg-dark: #07060c;
+  --bg-card: rgba(18, 13, 26, 0.92);
+  --bg-panel: #110c1c;
 
-  --miles-red: #ff003b;
-  --miles-red-glow: rgba(255, 0, 59, 0.6);
-  --miles-cyan: #00f0ff;
-  --miles-cyan-glow: rgba(0, 240, 255, 0.5);
+  /* Team Bit: Miles Morales */
+  --bit-red: #ff003b;
+  --bit-red-glow: rgba(255, 0, 59, 0.7);
+  --bit-cyan: #00f0ff;
+  --bit-cyan-glow: rgba(0, 240, 255, 0.6);
 
-  --gwen-pink: #ff007f;
-  --gwen-pink-glow: rgba(255, 0, 127, 0.6);
-  --gwen-teal: #00e5ff;
-  --gwen-white: #f5f8fc;
+  /* Team Build: Spider-Gwen */
+  --build-pink: #ff007f;
+  --build-pink-glow: rgba(255, 0, 127, 0.7);
+  --build-teal: #00e5ff;
+  --build-white: #f5f8fc;
 
-  --kahoot-red: #e52521;
-  --kahoot-blue: #1368ce;
-  --kahoot-yellow: #d89e00;
-  --kahoot-purple: #8322c4;
+  /* Kahoot Comic 4-Color Grid */
+  --opt-red: #e61937;
+  --opt-blue: #0b6bc7;
+  --opt-yellow: #dca000;
+  --opt-purple: #8622c4;
 
-  --font-comic: 'Bangers', 'Impact', 'Arial Black', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-tech: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-comic: 'Impact', 'Bangers', 'Arial Black', sans-serif;
+  --font-tech: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -36,76 +39,69 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  background-color: var(--bg-void);
+html, body {
+  background-color: var(--bg-dark);
   color: #fff;
   font-family: var(--font-tech);
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
-  position: relative;
   touch-action: manipulation;
 }
 
-/* Spider-Verse Halftone Texture (0 KB procedural CSS) */
+/* Ben-Day Halftone Comic Texture Overlay (0 KB CSS) */
 .halftone-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.18;
-  background-image: radial-gradient(circle, #fff 10%, transparent 11%);
+  opacity: 0.16;
+  background-image: radial-gradient(circle, #fff 9%, transparent 10%);
   background-size: 8px 8px;
 }
 
-/* Subtle Comic Vignette & Ambient Glow */
 .vignette-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 2;
-  background: radial-gradient(circle at 50% 30%, transparent 40%, rgba(7, 6, 11, 0.88) 95%);
+  background: radial-gradient(circle at 50% 40%, transparent 30%, rgba(7, 6, 12, 0.92) 95%);
 }
 
-/* Chromatic Aberration Text */
+/* Chromatic Aberration Text Effect */
 .chromatic-text {
   font-family: var(--font-comic);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   text-shadow:
-    -2px 0 var(--miles-red),
-    2px 0 var(--miles-cyan),
+    -2px 0 var(--bit-red),
+    2px 0 var(--bit-cyan),
     0 0 12px rgba(255, 255, 255, 0.4);
 }
 
-.chromatic-glitch {
-  animation: glitch-flicker 4s infinite;
+.glitch-anim {
+  animation: chromatic-glitch 5s infinite;
 }
 
-@keyframes glitch-flicker {
-  0%, 100% {
-    text-shadow: -2px 0 var(--miles-red), 2px 0 var(--miles-cyan);
+@keyframes chromatic-glitch {
+  0%, 94%, 100% {
     transform: translate(0, 0);
+    text-shadow: -2px 0 var(--bit-red), 2px 0 var(--bit-cyan);
   }
-  92% {
-    text-shadow: -2px 0 var(--miles-red), 2px 0 var(--miles-cyan);
-    transform: translate(0, 0);
+  95% {
+    transform: translate(-2px, 1px) skewX(3deg);
+    text-shadow: 3px -1px var(--bit-red), -3px 1px var(--bit-cyan);
   }
-  94% {
-    text-shadow: 3px -1px var(--miles-red), -3px 1px var(--miles-cyan);
-    transform: translate(-1px, 1px) skewX(2deg);
-  }
-  96% {
-    text-shadow: -3px 1px var(--miles-red), 3px -1px var(--miles-cyan);
-    transform: translate(2px, -1px) skewX(-2deg);
+  97% {
+    transform: translate(2px, -1px) skewX(-3deg);
+    text-shadow: -3px 1px var(--bit-red), 3px -1px var(--bit-cyan);
   }
   98% {
-    text-shadow: -1px -1px var(--miles-red), 1px 1px var(--miles-cyan);
     transform: translate(0, 0);
   }
 }
 
-/* Main Container */
+/* App Container */
 .app-container {
   position: relative;
   z-index: 10;
@@ -113,8 +109,8 @@ body {
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 12px;
-  max-width: 600px;
+  padding: 8px 10px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -126,11 +122,12 @@ body {
   background: var(--bg-card);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
-  padding: 8px 14px;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  position: relative;
 }
 
 .team-badge {
@@ -143,8 +140,8 @@ body {
 }
 
 .team-badge .dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   box-shadow: 0 0 10px currentColor;
 }
@@ -153,33 +150,23 @@ body {
   font-family: var(--font-comic);
   font-size: 16px;
   color: #ffd700;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
-/* Team Colors Dynamic Theme */
-body.team-miles {
-  --team-primary: var(--miles-red);
-  --team-glow: var(--miles-red-glow);
-  --team-accent: var(--miles-cyan);
+/* Team Dynamic Classes */
+body.team-bit {
+  --team-primary: var(--bit-red);
+  --team-glow: var(--bit-red-glow);
+  --team-accent: var(--bit-cyan);
 }
 
-body.team-gwen {
-  --team-primary: var(--gwen-pink);
-  --team-glow: var(--gwen-pink-glow);
-  --team-accent: var(--gwen-teal);
+body.team-build {
+  --team-primary: var(--build-pink);
+  --team-glow: var(--build-pink-glow);
+  --team-accent: var(--build-teal);
 }
 
-.team-miles .active-team-border {
-  border-color: var(--miles-red) !important;
-  box-shadow: 0 0 15px var(--miles-red-glow);
-}
-
-.team-gwen .active-team-border {
-  border-color: var(--gwen-pink) !important;
-  box-shadow: 0 0 15px var(--gwen-pink-glow);
-}
-
-/* Screen Panel System */
+/* Screens */
 .screen {
   display: none;
   flex: 1;
@@ -188,47 +175,203 @@ body.team-gwen {
 
 .screen.active {
   display: flex;
-  animation: comic-in 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  animation: comic-in 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 @keyframes comic-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* Comic Panel Containers */
 .comic-panel {
   background: var(--bg-card);
-  border: 3px solid #28203c;
-  border-radius: 16px;
-  padding: 16px;
+  border: 2.5px solid #28203a;
+  border-radius: 14px;
+  padding: 14px;
   position: relative;
-  box-shadow:
-    4px 4px 0px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(0, 0, 0, 0.5);
-  margin-bottom: 12px;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.85);
+  margin-bottom: 8px;
 }
 
 .comic-panel.highlight {
-  border-color: var(--team-primary, var(--miles-cyan));
-  box-shadow:
-    4px 4px 0px rgba(0, 0, 0, 0.8),
-    0 0 25px var(--team-glow, var(--miles-cyan-glow));
+  border-color: var(--team-primary, var(--bit-red));
+  box-shadow: 3px 3px 0px #000, 0 0 20px var(--team-glow, var(--bit-red-glow));
 }
 
-/* Spider Canvas Wrapper */
+/* ==========================================================================
+   MOBILE SPLIT LAYOUT: UPPER (QUESTIONS) + LOWER (SPIDER LOGO)
+   ========================================================================== */
+
+.split-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+/* UPPER HALF: QUESTION CARD + MCQ */
+.upper-quiz-section {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.question-card {
+  background: linear-gradient(135deg, rgba(26, 18, 38, 0.95), rgba(14, 10, 22, 0.95));
+  border: 2.5px solid #ffcc00;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  box-shadow: 3px 3px 0 #000, 0 0 15px rgba(255, 204, 0, 0.25);
+  text-align: center;
+  position: relative;
+}
+
+.question-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.difficulty-badge {
+  font-family: var(--font-comic);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #ffcc00;
+  color: #000;
+  font-weight: 900;
+}
+
+.spider-part-badge {
+  font-size: 10px;
+  color: #aaa;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.question-text {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #ffffff;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Timer Bar */
+.timer-bar-wrap {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00f0ff, #ffcc00, #ff003b);
+  border-radius: 3px;
+  width: 100%;
+  transition: width 1s linear;
+}
+
+/* MCQ 2x2 Button Grid */
+.mcq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  flex: 1;
+  min-height: 170px;
+}
+
+.mcq-btn {
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.08s ease, filter 0.12s ease;
+  position: relative;
+}
+
+.mcq-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.mcq-btn.selected {
+  outline: 3.5px solid #fff;
+  box-shadow: 0 0 20px #fff;
+  filter: brightness(1.2);
+}
+
+.mcq-btn.dimmed {
+  opacity: 0.35;
+  filter: grayscale(0.7);
+  pointer-events: none;
+}
+
+.mcq-btn.correct-highlight {
+  outline: 4px solid #00ff66;
+  box-shadow: 0 0 25px #00ff66;
+  filter: brightness(1.3);
+}
+
+.mcq-btn.opt-0 { background: linear-gradient(135deg, #e61937, #b80f29); }
+.mcq-btn.opt-1 { background: linear-gradient(135deg, #0b6bc7, #074e94); }
+.mcq-btn.opt-2 { background: linear-gradient(135deg, #dca000, #a87900); }
+.mcq-btn.opt-3 { background: linear-gradient(135deg, #8622c4, #5c148a); }
+
+.mcq-icon {
+  font-size: 20px;
+  margin-bottom: 3px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.mcq-label {
+  text-align: center;
+  line-height: 1.2;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* ==========================================================================
+   LOWER HALF: COMPACT SPIDER-MAN 2 CANVAS & LIVE BATTLE BAR
+   ========================================================================== */
+
+.lower-spider-section {
+  flex: 0.95;
+  background: rgba(14, 10, 20, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
 .spider-canvas-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  max-height: 48vh;
-  margin: 0 auto;
+  height: 190px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,57 +383,111 @@ body.team-gwen {
   display: block;
 }
 
-/* Progress Stats Ribbon */
-.progress-ribbon {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.progress-box {
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 10px;
-  padding: 8px 10px;
-  border-left: 4px solid #444;
-}
-
-.progress-box.miles {
-  border-left-color: var(--miles-red);
-}
-
-.progress-box.gwen {
-  border-left-color: var(--gwen-pink);
-}
-
-.progress-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #aaa;
-  letter-spacing: 0.5px;
-}
-
-.progress-val {
-  font-family: var(--font-comic);
-  font-size: 18px;
-  margin-top: 2px;
-}
-
-.progress-bar-track {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
+/* Battle Progress Bar */
+.battle-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 4px;
 }
 
-.progress-bar-fill {
+.battle-teams-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-comic);
+  font-size: 13px;
+}
+
+.battle-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.battle-fill-bit {
   height: 100%;
+  background: var(--bit-red);
+  box-shadow: 0 0 10px var(--bit-red-glow);
   transition: width 0.4s ease;
 }
 
+.battle-fill-build {
+  height: 100%;
+  background: var(--build-pink);
+  box-shadow: 0 0 10px var(--build-pink-glow);
+  transition: width 0.4s ease;
+}
+
+/* ==========================================================================
+   CHIBI SPIDER-MAN CHARACTERS & ANIMATIONS
+   ========================================================================== */
+
+/* Top Swinging Spidey in Lobby / Quiz */
+.chibi-swing-banner {
+  position: absolute;
+  top: -15px;
+  right: 15px;
+  width: 55px;
+  height: 55px;
+  z-index: 15;
+  animation: spidey-swing 3.5s ease-in-out infinite alternate;
+  transform-origin: 50% 0%;
+  pointer-events: none;
+}
+
+@keyframes spidey-swing {
+  0% { transform: rotate(-18deg); }
+  100% { transform: rotate(18deg); }
+}
+
+/* Corner Cheering Chibi Spideys */
+.chibi-corner-bit {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  width: 48px;
+  height: 48px;
+  z-index: 12;
+  pointer-events: none;
+  animation: chibi-bounce 2s ease-in-out infinite alternate;
+}
+
+.chibi-corner-build {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  width: 48px;
+  height: 48px;
+  z-index: 12;
+  pointer-events: none;
+  animation: chibi-bounce 2.2s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes chibi-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+/* Comic Action Stickers */
+.comic-sticker {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  width: 100px;
+  height: 40px;
+  animation: sticker-pop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes sticker-pop {
+  0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+  70% { transform: scale(1.15) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(6deg); opacity: 1; }
+}
+
 /* Countdown Overlay */
-.countdown-container {
+.countdown-box {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -299,321 +496,166 @@ body.team-gwen {
   text-align: center;
 }
 
-.countdown-number {
+.countdown-digits {
   font-family: var(--font-comic);
-  font-size: 120px;
+  font-size: 110px;
   line-height: 1;
   color: #fff;
-  text-shadow:
-    -4px 0 var(--miles-red),
-    4px 0 var(--miles-cyan),
-    0 0 30px #fff;
-  animation: countdown-pulse 1s infinite;
+  text-shadow: -4px 0 var(--bit-red), 4px 0 var(--bit-cyan), 0 0 35px #fff;
+  animation: count-pulse 1s infinite;
 }
 
-@keyframes countdown-pulse {
-  0% { transform: scale(1.3); opacity: 0; }
+@keyframes count-pulse {
+  0% { transform: scale(1.2); opacity: 0; }
   25% { transform: scale(1); opacity: 1; }
-  85% { transform: scale(0.9); opacity: 1; }
+  85% { transform: scale(0.92); opacity: 1; }
   100% { transform: scale(0.7); opacity: 0; }
-}
-
-/* Question Banner */
-.question-banner {
-  background: linear-gradient(135deg, rgba(30, 20, 50, 0.95), rgba(15, 10, 28, 0.95));
-  border: 3px solid #ffcc00;
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 12px;
-  text-align: center;
-  box-shadow: 4px 4px 0 #000, 0 0 20px rgba(255, 204, 0, 0.3);
-}
-
-.question-part-tag {
-  display: inline-block;
-  background: rgba(255, 204, 0, 0.2);
-  color: #ffcc00;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.question-text {
-  font-family: var(--font-tech);
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #ffffff;
-}
-
-/* Kahoot-Style MCQ Grid */
-.mcq-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 12px;
-  flex: 1;
-  min-height: 240px;
-  margin-bottom: 12px;
-}
-
-.mcq-btn {
-  border: none;
-  border-radius: 14px;
-  color: #fff;
-  font-family: var(--font-tech);
-  font-weight: 700;
-  font-size: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 14px;
-  cursor: pointer;
-  position: relative;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 0, 0, 0.5);
-  transition: transform 0.08s ease, filter 0.15s ease;
-  overflow: hidden;
-}
-
-.mcq-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-}
-
-.mcq-btn.selected {
-  outline: 4px solid #fff;
-  box-shadow: 0 0 25px #fff, 0 4px 0 rgba(0, 0, 0, 0.6);
-  filter: brightness(1.2);
-}
-
-.mcq-btn.dimmed {
-  opacity: 0.35;
-  filter: grayscale(0.6);
-  pointer-events: none;
-}
-
-.mcq-btn.correct-highlight {
-  outline: 5px solid #00ff66;
-  box-shadow: 0 0 30px #00ff66;
-  filter: brightness(1.3);
-  animation: correct-throb 0.6s infinite alternate;
-}
-
-@keyframes correct-throb {
-  from { transform: scale(1); }
-  to { transform: scale(1.03); }
-}
-
-.mcq-btn.red {
-  background: linear-gradient(135deg, #f02d28, #c11713);
-}
-
-.mcq-btn.blue {
-  background: linear-gradient(135deg, #1b74e4, #0b50a8);
-}
-
-.mcq-btn.yellow {
-  background: linear-gradient(135deg, #e5a800, #b27f00);
-}
-
-.mcq-btn.purple {
-  background: linear-gradient(135deg, #9b2cee, #6a13b0);
-}
-
-.mcq-icon {
-  font-size: 26px;
-  margin-bottom: 6px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-}
-
-.mcq-label {
-  text-align: center;
-  line-height: 1.25;
-  word-break: break-word;
-}
-
-/* Timer Bar */
-.timer-container {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-.timer-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00f0ff, #ffcc00, #ff003b);
-  border-radius: 5px;
-  width: 100%;
-  transition: width 1s linear;
-}
-
-/* Comic Feedback Overlay ("THWIP!", "BAM!") */
-.comic-burst-tag {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-family: var(--font-comic);
-  font-size: 24px;
-  color: #ffea00;
-  background: #ff003b;
-  padding: 4px 10px;
-  border: 2px solid #000;
-  border-radius: 6px;
-  box-shadow: 3px 3px 0 #000;
-  transform: rotate(8deg);
-  pointer-events: none;
-  animation: burst-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-}
-
-@keyframes burst-pop {
-  0% { transform: scale(0.3) rotate(0deg); opacity: 0; }
-  70% { transform: scale(1.2) rotate(12deg); opacity: 1; }
-  100% { transform: scale(1) rotate(8deg); opacity: 1; }
 }
 
 /* Result Reveal Box */
 .reveal-box {
-  background: var(--bg-panel);
-  border: 3px solid #ff003b;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--bg-card);
+  border: 2.5px solid #ffcc00;
+  border-radius: 14px;
+  padding: 16px;
   text-align: center;
-  box-shadow: 0 0 30px rgba(255, 0, 59, 0.3);
-  margin-bottom: 14px;
+  box-shadow: 0 0 25px rgba(255, 204, 0, 0.3);
+  margin-bottom: 10px;
 }
 
 .reveal-box.correct {
   border-color: #00ff66;
-  box-shadow: 0 0 30px rgba(0, 255, 102, 0.3);
+  box-shadow: 0 0 25px rgba(0, 255, 102, 0.4);
+}
+
+.reveal-box.wrong {
+  border-color: #ff003b;
+  box-shadow: 0 0 25px rgba(255, 0, 59, 0.4);
 }
 
 .reveal-title {
   font-family: var(--font-comic);
-  font-size: 32px;
-  margin-bottom: 6px;
+  font-size: 26px;
+  margin-bottom: 4px;
 }
 
-.reveal-subtitle {
-  font-size: 15px;
-  color: #ddd;
-  margin-bottom: 12px;
-}
-
-/* Top 5 Contributors Leaderboard */
+/* Top 5 MVPs */
 .top5-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .top5-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 12px;
 }
 
 .top5-item.rank-1 {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.05));
   border-color: #ffd700;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
 }
 
 .top5-rank {
   font-family: var(--font-comic);
-  font-size: 20px;
-  width: 28px;
+  font-size: 18px;
   color: #ffd700;
+  width: 24px;
 }
 
 .top5-name {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   flex: 1;
   text-align: left;
-  margin-left: 8px;
+  margin-left: 6px;
 }
 
 .top5-score {
   font-family: var(--font-comic);
-  font-size: 18px;
-  color: var(--miles-cyan);
+  font-size: 16px;
+  color: var(--bit-cyan);
 }
 
-/* Primary Action Button */
+/* Primary Button */
 .spider-btn {
-  background: linear-gradient(135deg, var(--miles-red), #b30029);
+  background: linear-gradient(135deg, var(--bit-red), #b30029);
   color: #fff;
   border: none;
   font-family: var(--font-comic);
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 14px 24px;
-  border-radius: 12px;
+  padding: 12px 20px;
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 5px 0 #590014, 0 0 15px rgba(255, 0, 59, 0.5);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 0 #590014, 0 0 15px rgba(255, 0, 59, 0.5);
   width: 100%;
 }
 
 .spider-btn:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow: 0 2px 0 #590014;
 }
 
-/* Stage / Projector Specific Layout */
-.stage-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+/* ==========================================================================
+   ADMIN LOGIN & CONTROL PANEL STYLING
+   ========================================================================== */
 
-.stage-arena {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  flex: 1;
-  align-items: center;
-}
-
-.stage-team-col {
+.admin-card {
   background: var(--bg-card);
-  border: 4px solid #28203c;
-  border-radius: 20px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+  border: 2.5px solid var(--bit-cyan);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
 }
 
-.stage-team-col.miles {
-  border-color: var(--miles-red);
-  box-shadow: 0 0 30px var(--miles-red-glow);
+.admin-input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1.5px solid #443366;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  margin-bottom: 12px;
+  outline: none;
 }
 
-.stage-team-col.gwen {
-  border-color: var(--gwen-pink);
-  box-shadow: 0 0 30px var(--gwen-pink-glow);
+.admin-input:focus {
+  border-color: var(--bit-cyan);
+  box-shadow: 0 0 10px var(--bit-cyan-glow);
 }
 
-@media (max-width: 768px) {
-  .stage-arena {
-    grid-template-columns: 1fr;
-  }
+.admin-btn-action {
+  background: #1a1426;
+  border: 2px solid #554477;
+  color: #fff;
+  font-family: var(--font-comic);
+  font-size: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.admin-btn-action.start {
+  background: linear-gradient(135deg, #00ff66, #009933);
+  color: #000;
+  border: none;
+  font-size: 18px;
+}
+
+.admin-btn-action.danger {
+  border-color: #ff003b;
+  color: #ff003b;
 }

@@ -5,7 +5,7 @@ import { UNLOCK_TIERS, TOTAL_NODES, TOTAL_EDGES } from '../server/spiderGraphDat
 
 test('Spider-Man Graph Predefined Geometry is intact', () => {
   assert.equal(TOTAL_NODES, 48, 'Should have exactly 48 nodes');
-  assert.equal(TOTAL_EDGES, 64, 'Should have 64 edges');
+  assert.equal(TOTAL_EDGES, 61, 'Should have 61 edges');
   assert.equal(UNLOCK_TIERS.length, 8, 'Should have 8 progressive unlock tiers');
 });
 
@@ -17,8 +17,8 @@ test('Team balancing on player join', () => {
     engine.registerPlayer(`player_${i}`, `Slinger_${i}`);
   }
 
-  assert.equal(engine.teams.miles.playerCount, 5, 'Miles should have 5 players');
-  assert.equal(engine.teams.gwen.playerCount, 5, 'Gwen should have 5 players');
+  assert.equal(engine.teams.bit.playerCount, 5, 'Bit should have 5 players');
+  assert.equal(engine.teams.build.playerCount, 5, 'Build should have 5 players');
   assert.equal(engine.players.size, 10, 'Total 10 registered players');
 });
 
@@ -48,29 +48,29 @@ test('Idempotency and double-tap prevention', () => {
 
 test('Node unlock progression per team', () => {
   const engine = new GameStateEngine();
-  const pMiles = engine.registerPlayer('p_m', 'MilesKid', 'miles');
-  const pGwen = engine.registerPlayer('p_g', 'GwenGirl', 'gwen');
+  const pBit = engine.registerPlayer('p_m', 'BitKid', 'bit');
+  const pBuild = engine.registerPlayer('p_g', 'BuildGirl', 'build');
 
   engine.activateQuestion(0); // Q1
   const q = engine.getCurrentQuestion();
 
-  // Only Miles answers correctly
-  engine.submitAnswer(pMiles.id, q.id, q.correctIndex);
-  engine.submitAnswer(pGwen.id, q.id, (q.correctIndex + 1) % 4); // wrong answer
+  // Only Bit answers correctly
+  engine.submitAnswer(pBit.id, q.id, q.correctIndex);
+  engine.submitAnswer(pBuild.id, q.id, (q.correctIndex + 1) % 4); // wrong answer
 
-  assert.ok(engine.teams.miles.unlockedTiers.has(1), 'Team Miles should unlock Tier 1');
-  assert.ok(engine.teams.miles.unlockedNodes.size > 0, 'Team Miles has unlocked nodes');
-  assert.equal(engine.teams.gwen.unlockedTiers.has(1), false, 'Team Gwen should NOT unlock Tier 1');
-  assert.equal(engine.teams.gwen.unlockedNodes.size, 0, 'Team Gwen has 0 unlocked nodes');
+  assert.ok(engine.teams.bit.unlockedTiers.has(1), 'Team Bit should unlock Tier 1');
+  assert.ok(engine.teams.bit.unlockedNodes.size > 0, 'Team Bit has unlocked nodes');
+  assert.equal(engine.teams.build.unlockedTiers.has(1), false, 'Team Build should NOT unlock Tier 1');
+  assert.equal(engine.teams.build.unlockedNodes.size, 0, 'Team Build has 0 unlocked nodes');
 });
 
 test('Top-5 Contributor rank calculation', () => {
   const engine = new GameStateEngine();
 
-  // Register 10 players for Team Miles
+  // Register 10 players for Team Bit
   const players = [];
   for (let i = 1; i <= 10; i++) {
-    players.push(engine.registerPlayer(`pm_${i}`, `MVP_Candidate_${i}`, 'miles'));
+    players.push(engine.registerPlayer(`pm_${i}`, `MVP_Candidate_${i}`, 'bit'));
   }
 
   // Activate Q1
@@ -85,7 +85,7 @@ test('Top-5 Contributor rank calculation', () => {
     }
   });
 
-  const top5 = engine.getTopContributors('miles', 5);
+  const top5 = engine.getTopContributors('bit', 5);
   assert.equal(top5.length, 5, 'Should return exactly 5 MVPs');
   assert.ok(top5[0].score >= top5[1].score, 'Top 1 score >= Top 2 score');
   assert.ok(top5[1].score >= top5[2].score, 'Top 2 score >= Top 3 score');
@@ -93,14 +93,14 @@ test('Top-5 Contributor rank calculation', () => {
 
 test('Deterministic Victory Trigger after all 8 questions or tier 8 unlock', () => {
   const engine = new GameStateEngine();
-  const pMiles = engine.registerPlayer('p_miles_champ', 'Champ', 'miles');
+  const pBit = engine.registerPlayer('p_bit_champ', 'Champ', 'bit');
 
-  // Unlock all 8 tiers for Miles
+  // Unlock all 8 tiers for Bit
   for (let tier = 1; tier <= 8; tier++) {
-    engine.unlockTeamTier('miles', tier);
+    engine.unlockTeamTier('bit', tier);
   }
 
-  assert.equal(engine.teams.miles.unlockedTiers.size, 8, 'Miles has all 8 tiers unlocked');
+  assert.equal(engine.teams.bit.unlockedTiers.size, 8, 'Bit has all 8 tiers unlocked');
   assert.equal(engine.stage, 'VICTORY', 'Stage should be VICTORY');
-  assert.equal(engine.winnerTeam, 'miles', 'Miles should be declared winner');
+  assert.equal(engine.winnerTeam, 'bit', 'Bit should be declared winner');
 });

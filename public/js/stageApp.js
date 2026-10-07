@@ -93,21 +93,28 @@ class StageApp {
 
     // Update Spider Canvases
     if (state.teams) {
-      if (this.milesRenderer) {
-        this.milesRenderer.updateUnlocked(state.teams.miles.unlockedNodeIds, state.teams.miles.unlockedEdges);
+      const bitTeam = state.teams.bit || state.teams.miles;
+      const buildTeam = state.teams.build || state.teams.gwen;
+
+      if (this.milesRenderer && bitTeam) {
+        this.milesRenderer.updateUnlocked(bitTeam.unlockedNodeIds, bitTeam.unlockedEdges);
       }
-      if (this.gwenRenderer) {
-        this.gwenRenderer.updateUnlocked(state.teams.gwen.unlockedNodeIds, state.teams.gwen.unlockedEdges);
+      if (this.gwenRenderer && buildTeam) {
+        this.gwenRenderer.updateUnlocked(buildTeam.unlockedNodeIds, buildTeam.unlockedEdges);
       }
 
       // Update Header Stats
-      document.getElementById('miles-score-display').textContent = state.teams.miles.score.toLocaleString();
-      document.getElementById('miles-pct-display').textContent = `${state.teams.miles.percent}%`;
-      document.getElementById('miles-players-display').textContent = `${state.teams.miles.playerCount} PLAYERS`;
+      if (bitTeam) {
+        document.getElementById('miles-score-display').textContent = bitTeam.score.toLocaleString();
+        document.getElementById('miles-pct-display').textContent = `${bitTeam.percent}%`;
+        document.getElementById('miles-players-display').textContent = `${bitTeam.playerCount} PLAYERS`;
+      }
 
-      document.getElementById('gwen-score-display').textContent = state.teams.gwen.score.toLocaleString();
-      document.getElementById('gwen-pct-display').textContent = `${state.teams.gwen.percent}%`;
-      document.getElementById('gwen-players-display').textContent = `${state.teams.gwen.playerCount} PLAYERS`;
+      if (buildTeam) {
+        document.getElementById('gwen-score-display').textContent = buildTeam.score.toLocaleString();
+        document.getElementById('gwen-pct-display').textContent = `${buildTeam.percent}%`;
+        document.getElementById('gwen-players-display').textContent = `${buildTeam.playerCount} PLAYERS`;
+      }
     }
 
     // Stage Center View
@@ -179,13 +186,13 @@ class StageApp {
             CORRECT ANSWER: ${q ? q.options[q.correctIndex] : ''}
           </div>
           <div style="display: flex; justify-content: center; gap: 30px; margin: 15px 0;">
-            <div style="background: rgba(255,0,59,0.2); border: 2px solid var(--miles-red); border-radius: 10px; padding: 10px 20px;">
-              <div style="font-size: 14px; color: var(--miles-red); font-weight: 700;">MILES CORRECT</div>
-              <div style="font-size: 28px; font-family: var(--font-comic); color: #fff;">${stats ? stats.milesCorrect : 0}</div>
+            <div style="background: rgba(255,0,59,0.2); border: 2px solid var(--bit-red); border-radius: 10px; padding: 10px 20px;">
+              <div style="font-size: 14px; color: var(--bit-red); font-weight: 700;">BIT CORRECT</div>
+              <div style="font-size: 28px; font-family: var(--font-comic); color: #fff;">${stats ? (stats.bitCorrect ?? stats.milesCorrect ?? 0) : 0}</div>
             </div>
-            <div style="background: rgba(255,0,127,0.2); border: 2px solid var(--gwen-pink); border-radius: 10px; padding: 10px 20px;">
-              <div style="font-size: 14px; color: var(--gwen-pink); font-weight: 700;">GWEN CORRECT</div>
-              <div style="font-size: 28px; font-family: var(--font-comic); color: #fff;">${stats ? stats.gwenCorrect : 0}</div>
+            <div style="background: rgba(255,0,127,0.2); border: 2px solid var(--build-pink); border-radius: 10px; padding: 10px 20px;">
+              <div style="font-size: 14px; color: var(--build-pink); font-weight: 700;">BUILD CORRECT</div>
+              <div style="font-size: 28px; font-family: var(--font-comic); color: #fff;">${stats ? (stats.buildCorrect ?? stats.gwenCorrect ?? 0) : 0}</div>
             </div>
           </div>
           <div style="font-size: 16px; color: #ffcc00; font-weight: 700;">
@@ -195,13 +202,13 @@ class StageApp {
       `;
     } else if (state.stage === 'VICTORY') {
       if (prevStage !== 'VICTORY') sound.playVictory();
-      const winTeam = state.winnerTeam === 'miles' ? state.teams.miles : state.teams.gwen;
+      const winTeam = (state.teams && state.winnerTeam && state.teams[state.winnerTeam]) || { name: 'CHAMPIONS', themeColor: '#ffd700' };
       const mvps = (state.topContributors && state.topContributors[state.winnerTeam]) || [];
 
       centerPanel.innerHTML = `
         <div style="width: 100%; padding: 20px; text-align: center;">
           <h1 class="chromatic-text chromatic-glitch" style="font-size: 46px; margin-bottom: 8px; color: ${winTeam.themeColor || '#ffd700'};">
-            🏆 ${winTeam.name.toUpperCase()} WINS! 🏆
+            🏆 ${winTeam.name ? winTeam.name.toUpperCase() : 'TEAM WINS'}! 🏆
           </h1>
           <div style="font-size: 20px; color: #ffd700; font-weight: 700; margin-bottom: 20px;">
             THE AMAZING SPIDER-MAN IS FULLY ASSEMBLED!

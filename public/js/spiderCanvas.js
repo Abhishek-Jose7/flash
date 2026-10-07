@@ -1,7 +1,11 @@
 /**
- * High-Performance 60 FPS HTML5 Canvas Spider Graph Visualizer
- * Renders The Amazing Spider-Man logo as connected nodes & laser web filaments
- * Features: High-DPI retina scaling, electric pulse particles, chromatic glow
+ * The Amazing Spider-Man 2 Vector Canvas Renderer
+ * High-precision 60 FPS HTML5 Canvas engine for the TASM2 emblem.
+ * Features:
+ * - Crisp blueprint guide lines when locked (no messy dot clusters)
+ * - Intense dual-pass laser neon glow (outer chromatic bloom + white-hot core)
+ * - Travelling bio-electric sparks along unlocked web lines
+ * - High-DPI Retina scaling with compact mobile height adaptation
  */
 
 export class SpiderCanvasRenderer {
@@ -10,17 +14,16 @@ export class SpiderCanvasRenderer {
     this.ctx = canvasElement.getContext('2d');
     this.themeColor = options.themeColor || '#ff003b';
     this.accentColor = options.accentColor || '#00f0ff';
-    this.glowColor = options.glowColor || 'rgba(255, 0, 59, 0.7)';
+    this.glowColor = options.glowColor || 'rgba(255, 0, 59, 0.8)';
 
     this.nodes = [];
     this.edges = [];
     this.unlockedNodeIds = new Set();
     this.unlockedEdges = [];
 
-    // Animation state
-    this.particles = [];       // Travelling electric pulses along edges
-    this.burstParticles = [];  // Spark explosions on newly unlocked nodes
-    this.prevUnlockedCount = 0;
+    // Particle FX
+    this.sparks = [];
+    this.bursts = [];
     this.animTime = 0;
     this.isRunning = false;
 
@@ -41,12 +44,12 @@ export class SpiderCanvasRenderer {
   updateUnlocked(unlockedNodeIds = [], unlockedEdges = []) {
     const nextSet = new Set(unlockedNodeIds);
 
-    // Detect newly unlocked nodes to trigger comic spark explosions
+    // Detect newly unlocked nodes to trigger comic spark bursts
     if (this.nodes.length > 0) {
       for (const id of nextSet) {
         if (!this.unlockedNodeIds.has(id)) {
           const node = this.nodes.find(n => n.id === id);
-          if (node) this.spawnNodeBurst(node);
+          if (node) this.spawnBurst(node);
         }
       }
     }
@@ -55,19 +58,19 @@ export class SpiderCanvasRenderer {
     this.unlockedEdges = unlockedEdges || [];
   }
 
-  spawnNodeBurst(node) {
-    const burstCount = 12;
-    for (let i = 0; i < burstCount; i++) {
-      const angle = (Math.PI * 2 * i) / burstCount + (Math.random() - 0.5);
-      const speed = 2 + Math.random() * 4;
-      this.burstParticles.push({
+  spawnBurst(node) {
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const speed = 25 + Math.random() * 45;
+      this.bursts.push({
         x: node.x,
         y: node.y,
-        vx: Math.cos(angle) * speed * 25,
-        vy: Math.sin(angle) * speed * 25,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
         life: 1.0,
-        color: Math.random() > 0.5 ? this.themeColor : this.accentColor,
-        size: 2 + Math.random() * 3
+        color: Math.random() > 0.4 ? this.themeColor : this.accentColor,
+        size: 2.5 + Math.random() * 2.5
       });
     }
   }
@@ -76,8 +79,8 @@ export class SpiderCanvasRenderer {
     this.resize = () => {
       const rect = this.canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      const displayWidth = Math.max(200, Math.floor(rect.width));
-      const displayHeight = Math.max(200, Math.floor(rect.height));
+      const displayWidth = Math.max(150, Math.floor(rect.width));
+      const displayHeight = Math.max(150, Math.floor(rect.height));
 
       if (this.canvas.width !== displayWidth * dpr || this.canvas.height !== displayHeight * dpr) {
         this.canvas.width = displayWidth * dpr;
@@ -114,39 +117,39 @@ export class SpiderCanvasRenderer {
   }
 
   update(dt) {
-    // Spawn travelling electric pulse particles on unlocked edges
-    if (this.unlockedEdges.length > 0 && Math.random() < 0.25) {
+    // Spawn travelling bio-electric pulses along unlocked edges
+    if (this.unlockedEdges.length > 0 && Math.random() < 0.3) {
       const edge = this.unlockedEdges[Math.floor(Math.random() * this.unlockedEdges.length)];
       const n1 = this.nodes.find(n => n.id === edge[0]);
       const n2 = this.nodes.find(n => n.id === edge[1]);
       if (n1 && n2) {
-        this.particles.push({
+        this.sparks.push({
           from: n1,
           to: n2,
           progress: 0,
-          speed: 1.2 + Math.random() * 1.5,
+          speed: 1.5 + Math.random() * 2.0,
           color: Math.random() > 0.3 ? this.accentColor : '#ffffff'
         });
       }
     }
 
-    // Update travelling particles
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
-      p.progress += p.speed * dt;
-      if (p.progress >= 1.0) {
-        this.particles.splice(i, 1);
+    // Update travelling sparks
+    for (let i = this.sparks.length - 1; i >= 0; i--) {
+      const s = this.sparks[i];
+      s.progress += s.speed * dt;
+      if (s.progress >= 1.0) {
+        this.sparks.splice(i, 1);
       }
     }
 
-    // Update burst particles
-    for (let i = this.burstParticles.length - 1; i >= 0; i--) {
-      const bp = this.burstParticles[i];
-      bp.x += bp.vx * dt;
-      bp.y += bp.vy * dt;
-      bp.life -= dt * 1.8;
-      if (bp.life <= 0) {
-        this.burstParticles.splice(i, 1);
+    // Update burst sparks
+    for (let i = this.bursts.length - 1; i >= 0; i--) {
+      const b = this.bursts[i];
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.life -= dt * 2.2;
+      if (b.life <= 0) {
+        this.bursts.splice(i, 1);
       }
     }
   }
@@ -159,20 +162,20 @@ export class SpiderCanvasRenderer {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Coordinate transformation: map [0, 1000] -> canvas pixels with padding
-    const padding = 20 * (window.devicePixelRatio || 1);
+    // Coordinate mapping: TASM2 emblem normalized in [0, 1000] x [0, 1000]
+    const padding = 12 * (window.devicePixelRatio || 1);
     const usableW = w - padding * 2;
     const usableH = h - padding * 2;
     const scale = Math.min(usableW / 1000, usableH / 1000);
     const offsetX = padding + (usableW - 1000 * scale) / 2;
     const offsetY = padding + (usableH - 1000 * scale) / 2;
 
-    const toCanvasX = (x) => offsetX + x * scale;
-    const toCanvasY = (y) => offsetY + y * scale;
+    const toX = (x) => offsetX + x * scale;
+    const toY = (y) => offsetY + y * scale;
 
-    // 1. Draw LOCKED Edges (Faint blueprint grid)
-    ctx.lineWidth = Math.max(1, 1.2 * scale);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    // 1. Draw LOCKED Blueprint Skeleton (Faint clean aesthetic web)
+    ctx.lineWidth = Math.max(1, 1.0 * scale);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
     ctx.shadowBlur = 0;
     ctx.beginPath();
     for (const [fromId, toId] of this.edges) {
@@ -183,18 +186,18 @@ export class SpiderCanvasRenderer {
         const n1 = this.nodes.find(n => n.id === fromId);
         const n2 = this.nodes.find(n => n.id === toId);
         if (n1 && n2) {
-          ctx.moveTo(toCanvasX(n1.x), toCanvasY(n1.y));
-          ctx.lineTo(toCanvasX(n2.x), toCanvasY(n2.y));
+          ctx.moveTo(toX(n1.x), toY(n1.y));
+          ctx.lineTo(toX(n2.x), toY(n2.y));
         }
       }
     }
     ctx.stroke();
 
-    // 2. Draw UNLOCKED Edges (Laser web filaments with chromatic glow)
+    // 2. Draw UNLOCKED Laser Web Filaments (Dual-Pass Vivid Neon)
     if (this.unlockedEdges.length > 0) {
       // Glow pass
       ctx.shadowColor = this.glowColor;
-      ctx.shadowBlur = 12 * scale;
+      ctx.shadowBlur = 14 * scale;
       ctx.strokeStyle = this.themeColor;
       ctx.lineWidth = Math.max(2, 3.2 * scale);
       ctx.beginPath();
@@ -202,78 +205,78 @@ export class SpiderCanvasRenderer {
         const n1 = this.nodes.find(n => n.id === fromId);
         const n2 = this.nodes.find(n => n.id === toId);
         if (n1 && n2) {
-          ctx.moveTo(toCanvasX(n1.x), toCanvasY(n1.y));
-          ctx.lineTo(toCanvasX(n2.x), toCanvasY(n2.y));
+          ctx.moveTo(toX(n1.x), toY(n1.y));
+          ctx.lineTo(toX(n2.x), toY(n2.y));
         }
       }
       ctx.stroke();
 
-      // Sharp core pass
+      // Sharp white-hot electric core pass
       ctx.shadowBlur = 0;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = Math.max(1, 1.4 * scale);
+      ctx.lineWidth = Math.max(1, 1.3 * scale);
       ctx.stroke();
     }
 
-    // 3. Draw Travelling Web Sparks
-    for (const p of this.particles) {
-      const curX = p.from.x + (p.to.x - p.from.x) * p.progress;
-      const curY = p.from.y + (p.to.y - p.from.y) * p.progress;
-      const cx = toCanvasX(curX);
-      const cy = toCanvasY(curY);
+    // 3. Draw Travelling Bio-Sparks
+    for (const s of this.sparks) {
+      const curX = s.from.x + (s.to.x - s.from.x) * s.progress;
+      const curY = s.from.y + (s.to.y - s.from.y) * s.progress;
+      const cx = toX(curX);
+      const cy = toY(curY);
 
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 10 * scale;
+      ctx.fillStyle = s.color;
+      ctx.shadowColor = s.color;
+      ctx.shadowBlur = 8 * scale;
       ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(2, 3.5 * scale), 0, Math.PI * 2);
+      ctx.arc(cx, cy, Math.max(2, 3.2 * scale), 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // 4. Draw Burst Particles
-    for (const bp of this.burstParticles) {
-      const cx = toCanvasX(bp.x);
-      const cy = toCanvasY(bp.y);
-      ctx.fillStyle = bp.color;
-      ctx.globalAlpha = Math.max(0, bp.life);
-      ctx.shadowBlur = 8 * scale;
-      ctx.shadowColor = bp.color;
+    // 4. Draw Burst Sparks
+    for (const b of this.bursts) {
+      const cx = toX(b.x);
+      const cy = toY(b.y);
+      ctx.fillStyle = b.color;
+      ctx.globalAlpha = Math.max(0, b.life);
+      ctx.shadowBlur = 10 * scale;
+      ctx.shadowColor = b.color;
       ctx.beginPath();
-      ctx.arc(cx, cy, bp.size * scale, 0, Math.PI * 2);
+      ctx.arc(cx, cy, b.size * scale, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1.0;
 
-    // 5. Draw LOCKED Nodes (Translucent dots)
+    // 5. Draw LOCKED Joint Pins (Tiny clean dots, not giant blotches)
     ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
     for (const node of this.nodes) {
       if (!this.unlockedNodeIds.has(node.id)) {
-        const cx = toCanvasX(node.x);
-        const cy = toCanvasY(node.y);
+        const cx = toX(node.x);
+        const cy = toY(node.y);
         ctx.beginPath();
-        ctx.arc(cx, cy, Math.max(2, 2.8 * scale), 0, Math.PI * 2);
+        ctx.arc(cx, cy, Math.max(1.5, 2.0 * scale), 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     // 6. Draw UNLOCKED Nodes (Ignited neon nodes with pulse rings)
-    const pulseScale = 1 + Math.sin(this.animTime * 4) * 0.15;
+    const pulse = 1 + Math.sin(this.animTime * 5) * 0.18;
     for (const node of this.nodes) {
       if (this.unlockedNodeIds.has(node.id)) {
-        const cx = toCanvasX(node.x);
-        const cy = toCanvasY(node.y);
-        const baseRadius = Math.max(3, 4.8 * scale);
+        const cx = toX(node.x);
+        const cy = toY(node.y);
+        const baseRadius = Math.max(2.8, 4.2 * scale);
 
-        // Outer glow
+        // Outer glow corona
         ctx.shadowColor = this.themeColor;
         ctx.shadowBlur = 16 * scale;
         ctx.fillStyle = this.themeColor;
         ctx.beginPath();
-        ctx.arc(cx, cy, baseRadius * pulseScale, 0, Math.PI * 2);
+        ctx.arc(cx, cy, baseRadius * pulse, 0, Math.PI * 2);
         ctx.fill();
 
-        // Inner white hot core
+        // White hot diamond/circle center
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();

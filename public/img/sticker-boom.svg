@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="100%" height="100%">
+  <!-- Starburst explosion -->
+  <polygon points="12,38 32,10 68,26 100,5 132,24 168,8 188,40 165,68 185,78 135,68 102,78 72,66 40,76 22,58"
+           fill="#ff003b" stroke="#000000" stroke-width="4"/>
+  <polygon points="16,38 34,14 66,28 98,10 128,26 163,12 181,40 160,65 178,74 133,65 101,74 74,63 43,72 26,56"
+           fill="#ffea00"/>
+  <!-- BOOM Text -->
+  <text x="100" y="55" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900"
+        text-anchor="middle" fill="#000000" transform="rotate(4 100 50) translate(3, 3)">BOOM!</text>
+  <text x="100" y="55" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900"
+        text-anchor="middle" fill="#ffffff" stroke="#000000" stroke-width="2" transform="rotate(4 100 50)">BOOM!</text>
+</svg>

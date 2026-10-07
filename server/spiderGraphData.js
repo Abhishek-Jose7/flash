@@ -1,183 +1,197 @@
 /**
- * Predefined Mathematical Graph of The Amazing Spider-Man Emblem
- * 48 Nodes, 68 Edges, 8 Progressive Unlock Tiers
- * Coordinate system normalized to [0, 1000] x [0, 1000]
+ * The Amazing Spider-Man 2 (TASM2) Precision Vector Graph
+ * Authentic silhouette:
+ * - Sharp fangs & head apex
+ * - Elongated narrow hourglass thorax & abdomen teardrop
+ * - 4 Upper Legs: Arched upward with high elbow bends & sweeping outward talons
+ * - 4 Lower Legs: Razor-sharp elongated downward fangs tapering to bottom
+ * Normalized to [0, 1000] x [0, 1000] with center at x = 500
  */
 
 export const SPIDER_NODES = [
-  // --- BODY CORE (0 - 11) ---
-  { id: 0, x: 500, y: 190, group: 'head', label: 'Apex' },
-  { id: 1, x: 476, y: 220, group: 'head', label: 'Fang L' },
-  { id: 2, x: 524, y: 220, group: 'head', label: 'Fang R' },
-  { id: 3, x: 500, y: 260, group: 'thorax', label: 'Upper Thorax' },
-  { id: 4, x: 500, y: 320, group: 'thorax', label: 'Mid Thorax' },
-  { id: 5, x: 500, y: 380, group: 'thorax', label: 'Waist Pinch' },
-  { id: 6, x: 468, y: 430, group: 'abdomen', label: 'Abdomen L1' },
-  { id: 7, x: 532, y: 430, group: 'abdomen', label: 'Abdomen R1' },
-  { id: 8, x: 500, y: 470, group: 'abdomen', label: 'Abdomen Mid' },
-  { id: 9, x: 478, y: 520, group: 'abdomen', label: 'Abdomen L2' },
-  { id: 10, x: 522, y: 520, group: 'abdomen', label: 'Abdomen R2' },
-  { id: 11, x: 500, y: 580, group: 'abdomen', label: 'Spinneret' },
+  // --- HEAD & FANGS (0 - 3) ---
+  { id: 0, x: 500, y: 140, group: 'head', label: 'Head Apex' },
+  { id: 1, x: 480, y: 175, group: 'head', label: 'Fang Left' },
+  { id: 2, x: 520, y: 175, group: 'head', label: 'Fang Right' },
+  { id: 3, x: 500, y: 210, group: 'head', label: 'Head Base' },
 
-  // --- UPPER LEG 1 (Topmost Upward Arch) (12 - 19) ---
-  { id: 12, x: 470, y: 250, group: 'leg_u1', label: 'Joint U1-L' },
-  { id: 13, x: 385, y: 175, group: 'leg_u1', label: 'Knee U1-L' },
-  { id: 14, x: 295, y: 165, group: 'leg_u1', label: 'Arch U1-L' },
-  { id: 15, x: 215, y: 245, group: 'leg_u1', label: 'Tip U1-L' },
-  { id: 16, x: 530, y: 250, group: 'leg_u1', label: 'Joint U1-R' },
-  { id: 17, x: 615, y: 175, group: 'leg_u1', label: 'Knee U1-R' },
-  { id: 18, x: 705, y: 165, group: 'leg_u1', label: 'Arch U1-R' },
-  { id: 19, x: 785, y: 245, group: 'leg_u1', label: 'Tip U1-R' },
+  // --- THORAX SHIELD & HOURGLASS WAIST (4 - 9) ---
+  { id: 4, x: 500, y: 250, group: 'thorax', label: 'Upper Thorax' },
+  { id: 5, x: 478, y: 285, group: 'thorax', label: 'Chest Left' },
+  { id: 6, x: 522, y: 285, group: 'thorax', label: 'Chest Right' },
+  { id: 7, x: 500, y: 320, group: 'thorax', label: 'Mid Thorax' },
+  { id: 8, x: 490, y: 360, group: 'thorax', label: 'Waist Left' },
+  { id: 9, x: 510, y: 360, group: 'thorax', label: 'Waist Right' },
 
-  // --- UPPER LEG 2 (Second Upward Arch) (20 - 27) ---
-  { id: 20, x: 462, y: 300, group: 'leg_u2', label: 'Joint U2-L' },
-  { id: 21, x: 360, y: 260, group: 'leg_u2', label: 'Knee U2-L' },
-  { id: 22, x: 260, y: 280, group: 'leg_u2', label: 'Arch U2-L' },
-  { id: 23, x: 175, y: 390, group: 'leg_u2', label: 'Tip U2-L' },
-  { id: 24, x: 538, y: 300, group: 'leg_u2', label: 'Joint U2-R' },
-  { id: 25, x: 640, y: 260, group: 'leg_u2', label: 'Knee U2-R' },
-  { id: 26, x: 740, y: 280, group: 'leg_u2', label: 'Arch U2-R' },
-  { id: 27, x: 825, y: 390, group: 'leg_u2', label: 'Tip U2-R' },
+  // --- ABDOMEN & NEEDLE SPINNERET (10 - 15) ---
+  { id: 10, x: 500, y: 400, group: 'abdomen', label: 'Abdomen Top' },
+  { id: 11, x: 482, y: 440, group: 'abdomen', label: 'Abdomen Flank L' },
+  { id: 12, x: 518, y: 440, group: 'abdomen', label: 'Abdomen Flank R' },
+  { id: 13, x: 500, y: 490, group: 'abdomen', label: 'Abdomen Mid' },
+  { id: 14, x: 500, y: 550, group: 'abdomen', label: 'Abdomen Lower' },
+  { id: 15, x: 500, y: 620, group: 'abdomen', label: 'Spinneret Needle' },
 
-  // --- LOWER LEG 3 (Downward Lateral) (28 - 35) ---
-  { id: 28, x: 465, y: 365, group: 'leg_d1', label: 'Joint D1-L' },
-  { id: 29, x: 345, y: 415, group: 'leg_d1', label: 'Knee D1-L' },
-  { id: 30, x: 240, y: 525, group: 'leg_d1', label: 'Shaft D1-L' },
-  { id: 31, x: 190, y: 675, group: 'leg_d1', label: 'Tip D1-L' },
-  { id: 32, x: 535, y: 365, group: 'leg_d1', label: 'Joint D1-R' },
-  { id: 33, x: 655, y: 415, group: 'leg_d1', label: 'Knee D1-R' },
-  { id: 34, x: 760, y: 525, group: 'leg_d1', label: 'Shaft D1-R' },
-  { id: 35, x: 810, y: 675, group: 'leg_d1', label: 'Tip D1-R' },
+  // --- UPPER LEG 1 (Topmost Arch) (16 - 23) ---
+  // Left 1
+  { id: 16, x: 475, y: 235, group: 'leg_u1', label: 'Root U1-L' },
+  { id: 17, x: 390, y: 155, group: 'leg_u1', label: 'Elbow High U1-L' },
+  { id: 18, x: 290, y: 145, group: 'leg_u1', label: 'Arch Peak U1-L' },
+  { id: 19, x: 190, y: 230, group: 'leg_u1', label: 'Talon Tip U1-L' },
+  // Right 1
+  { id: 20, x: 525, y: 235, group: 'leg_u1', label: 'Root U1-R' },
+  { id: 21, x: 610, y: 155, group: 'leg_u1', label: 'Elbow High U1-R' },
+  { id: 22, x: 710, y: 145, group: 'leg_u1', label: 'Arch Peak U1-R' },
+  { id: 23, x: 810, y: 230, group: 'leg_u1', label: 'Talon Tip U1-R' },
 
-  // --- LOWER LEG 4 (Long Downward Fangs) (36 - 43) ---
-  { id: 36, x: 478, y: 430, group: 'leg_d2', label: 'Joint D2-L' },
-  { id: 37, x: 385, y: 535, group: 'leg_d2', label: 'Knee D2-L' },
-  { id: 38, x: 305, y: 685, group: 'leg_d2', label: 'Shaft D2-L' },
-  { id: 39, x: 265, y: 855, group: 'leg_d2', label: 'Tip D2-L' },
-  { id: 40, x: 522, y: 430, group: 'leg_d2', label: 'Joint D2-R' },
-  { id: 41, x: 615, y: 535, group: 'leg_d2', label: 'Knee D2-R' },
-  { id: 42, x: 695, y: 685, group: 'leg_d2', label: 'Shaft D2-R' },
-  { id: 43, x: 735, y: 855, group: 'leg_d2', label: 'Tip D2-R' },
+  // --- UPPER LEG 2 (Second High Arch) (24 - 31) ---
+  // Left 2
+  { id: 24, x: 470, y: 275, group: 'leg_u2', label: 'Root U2-L' },
+  { id: 25, x: 370, y: 225, group: 'leg_u2', label: 'Elbow U2-L' },
+  { id: 26, x: 250, y: 250, group: 'leg_u2', label: 'Arch U2-L' },
+  { id: 27, x: 150, y: 370, group: 'leg_u2', label: 'Talon Tip U2-L' },
+  // Right 2
+  { id: 28, x: 530, y: 275, group: 'leg_u2', label: 'Root U2-R' },
+  { id: 29, x: 630, y: 225, group: 'leg_u2', label: 'Elbow U2-R' },
+  { id: 30, x: 750, y: 250, group: 'leg_u2', label: 'Arch U2-R' },
+  { id: 31, x: 850, y: 370, group: 'leg_u2', label: 'Talon Tip U2-R' },
 
-  // --- SPIDERWEB MATRIX CONNECTORS (44 - 47) ---
-  { id: 44, x: 425, y: 235, group: 'web_lattice', label: 'Web L-Top' },
-  { id: 45, x: 575, y: 235, group: 'web_lattice', label: 'Web R-Top' },
-  { id: 46, x: 330, y: 355, group: 'web_lattice', label: 'Web L-Mid' },
-  { id: 47, x: 670, y: 355, group: 'web_lattice', label: 'Web R-Mid' }
+  // --- LOWER LEG 3 (Downward Lateral Sweep) (32 - 39) ---
+  // Left 3
+  { id: 32, x: 475, y: 340, group: 'leg_d1', label: 'Root D1-L' },
+  { id: 33, x: 360, y: 385, group: 'leg_d1', label: 'Knee D1-L' },
+  { id: 34, x: 255, y: 495, group: 'leg_d1', label: 'Shaft D1-L' },
+  { id: 35, x: 195, y: 680, group: 'leg_d1', label: 'Claw Tip D1-L' },
+  // Right 3
+  { id: 36, x: 525, y: 340, group: 'leg_d1', label: 'Root D1-R' },
+  { id: 37, x: 640, y: 385, group: 'leg_d1', label: 'Knee D1-R' },
+  { id: 38, x: 745, y: 495, group: 'leg_d1', label: 'Shaft D1-R' },
+  { id: 39, x: 805, y: 680, group: 'leg_d1', label: 'Claw Tip D1-R' },
+
+  // --- LOWER LEG 4 (Iconic TASM2 Long Elongated Fangs) (40 - 47) ---
+  // Left 4
+  { id: 40, x: 485, y: 410, group: 'leg_d2', label: 'Root D2-L' },
+  { id: 41, x: 395, y: 520, group: 'leg_d2', label: 'Knee Low D2-L' },
+  { id: 42, x: 320, y: 695, group: 'leg_d2', label: 'Shaft D2-L' },
+  { id: 43, x: 280, y: 890, group: 'leg_d2', label: 'Razor Fangs D2-L' },
+  // Right 4
+  { id: 44, x: 515, y: 410, group: 'leg_d2', label: 'Root D2-R' },
+  { id: 45, x: 605, y: 520, group: 'leg_d2', label: 'Knee Low D2-R' },
+  { id: 46, x: 680, y: 695, group: 'leg_d2', label: 'Shaft D2-R' },
+  { id: 47, x: 720, y: 890, group: 'leg_d2', label: 'Razor Fangs D2-R' }
 ];
 
 export const SPIDER_EDGES = [
-  // Spine & Thorax
-  [0, 1], [0, 2], [1, 3], [2, 3],
-  [3, 4], [4, 5],
-  [5, 6], [5, 7], [6, 8], [7, 8],
-  [8, 9], [8, 10], [9, 11], [10, 11],
+  // Head & Neck
+  [0, 1], [0, 2], [1, 3], [2, 3], [3, 4],
 
-  // Leg U1
-  [3, 12], [12, 13], [13, 14], [14, 15],
-  [3, 16], [16, 17], [17, 18], [18, 19],
+  // Thorax Contour & Waist
+  [4, 5], [4, 6], [5, 7], [6, 7],
+  [7, 8], [7, 9], [8, 10], [9, 10],
 
-  // Leg U2
+  // Abdomen Diamond & Needle
+  [10, 11], [10, 12], [11, 13], [12, 13],
+  [13, 14], [14, 15],
+
+  // Leg U1 (Top Arch)
+  [4, 16], [16, 17], [17, 18], [18, 19],
   [4, 20], [20, 21], [21, 22], [22, 23],
-  [4, 24], [24, 25], [25, 26], [26, 27],
 
-  // Leg D1
-  [5, 28], [28, 29], [29, 30], [30, 31],
-  [5, 32], [32, 33], [33, 34], [34, 35],
+  // Leg U2 (Mid Arch)
+  [7, 24], [24, 25], [25, 26], [26, 27],
+  [7, 28], [28, 29], [29, 30], [30, 31],
 
-  // Leg D2
-  [8, 36], [36, 37], [37, 38], [38, 39],
-  [8, 40], [40, 41], [41, 42], [42, 43],
+  // Leg D1 (Lateral Down)
+  [8, 32], [32, 33], [33, 34], [34, 35],
+  [9, 36], [36, 37], [37, 38], [38, 39],
 
-  // Cross Web Lattice
-  [12, 44], [44, 13], [16, 45], [45, 17],
-  [20, 46], [46, 21], [24, 47], [47, 25],
-  [44, 20], [45, 24], [46, 29], [47, 33],
-  [21, 46], [25, 47], [29, 37], [33, 41],
-  [30, 38], [34, 42]
+  // Leg D2 (Long Rear Fangs)
+  [10, 40], [40, 41], [41, 42], [42, 43],
+  [10, 44], [44, 45], [45, 46], [46, 47],
+
+  // Web Tendon Braces (TASM2 structural web cross-ties)
+  [16, 24], [20, 28],
+  [24, 32], [28, 36],
+  [32, 40], [36, 44],
+  [17, 25], [21, 29],
+  [33, 41], [37, 45]
 ];
 
 /**
  * 8 Progressive Unlock Tiers
- * Each tier unlocks a deterministic list of nodes and edges.
+ * Unlocks the Amazing Spider-Man 2 emblem from core outwards to the razor tips!
  */
 export const UNLOCK_TIERS = [
   {
     tier: 1,
-    title: "Thorax Core Activated",
-    nodes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    edges: [
-      [0, 1], [0, 2], [1, 3], [2, 3],
-      [3, 4], [4, 5],
-      [5, 6], [5, 7], [6, 8], [7, 8],
-      [8, 9], [8, 10], [9, 11], [10, 11]
-    ]
+    title: "Head & Fangs Awoken",
+    nodes: [0, 1, 2, 3],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4]]
   },
   {
     tier: 2,
-    title: "Spider-Web Roots Bound",
-    nodes: [12, 16, 20, 24, 28, 32, 36, 40, 44, 45, 46, 47],
+    title: "Thorax Core & Spine Formed",
+    nodes: [4, 5, 6, 7, 8, 9, 10],
     edges: [
-      [3, 12], [3, 16], [4, 20], [4, 24],
-      [5, 28], [5, 32], [8, 36], [8, 40],
-      [12, 44], [16, 45], [20, 46], [24, 47],
-      [44, 20], [45, 24]
+      [4, 5], [4, 6], [5, 7], [6, 7],
+      [7, 8], [7, 9], [8, 10], [9, 10]
     ]
   },
   {
     tier: 3,
-    title: "Upper Fang Knees Ignited",
-    nodes: [13, 17, 21, 25],
+    title: "Abdomen Needle Blade",
+    nodes: [11, 12, 13, 14, 15],
     edges: [
-      [12, 13], [16, 17], [44, 13], [45, 17],
-      [20, 21], [24, 25], [46, 21], [47, 25],
-      [21, 46], [25, 47]
+      [10, 11], [10, 12], [11, 13], [12, 13],
+      [13, 14], [14, 15]
     ]
   },
   {
     tier: 4,
-    title: "Upper Web Arches Unlocked",
-    nodes: [14, 18, 22, 26],
+    title: "Upper Leg Tendons Primed",
+    nodes: [16, 20, 24, 28],
     edges: [
-      [13, 14], [17, 18],
-      [21, 22], [25, 26]
+      [4, 16], [4, 20], [7, 24], [7, 28],
+      [16, 24], [20, 28]
     ]
   },
   {
     tier: 5,
-    title: "Upper Fangs Fully Deployed",
-    nodes: [15, 19, 23, 27],
+    title: "Upper Arches & Talons Deployed",
+    nodes: [17, 18, 19, 21, 22, 23, 25, 26, 27, 29, 30, 31],
     edges: [
-      [14, 15], [18, 19],
-      [22, 23], [26, 27]
+      [16, 17], [17, 18], [18, 19],
+      [20, 21], [21, 22], [22, 23],
+      [24, 25], [25, 26], [26, 27],
+      [28, 29], [29, 30], [30, 31],
+      [17, 25], [21, 29]
     ]
   },
   {
     tier: 6,
-    title: "Lower Knees Shockwave",
-    nodes: [29, 33, 37, 41],
+    title: "Lower Leg Roots Anchored",
+    nodes: [32, 36, 40, 44],
     edges: [
-      [28, 29], [32, 33], [46, 29], [47, 33],
-      [36, 37], [40, 41], [29, 37], [33, 41]
+      [8, 32], [9, 36], [10, 40], [10, 44],
+      [24, 32], [28, 36], [32, 40], [36, 44]
     ]
   },
   {
     tier: 7,
-    title: "Venom Shafts Primed",
-    nodes: [30, 34, 38, 42],
+    title: "Lateral Spider Claws Extended",
+    nodes: [33, 34, 35, 37, 38, 39],
     edges: [
-      [29, 30], [33, 34],
-      [37, 38], [41, 42],
-      [30, 38], [34, 42]
+      [32, 33], [33, 34], [34, 35],
+      [36, 37], [37, 38], [38, 39]
     ]
   },
   {
     tier: 8,
-    title: "AMAZING SPIDER-MAN 100% ASSEMBLED",
-    nodes: [31, 35, 39, 43],
+    title: "AMAZING SPIDER-MAN 2 FULLY ASSEMBLED",
+    nodes: [41, 42, 43, 45, 46, 47],
     edges: [
-      [30, 31], [34, 35],
-      [38, 39], [42, 43]
+      [40, 41], [41, 42], [42, 43],
+      [44, 45], [45, 46], [46, 47],
+      [33, 41], [37, 45]
     ]
   }
 ];

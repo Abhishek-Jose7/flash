@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <filter id="glow-miles" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ff003b" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+  <!-- Web Line -->
+  <path d="M 80 0 L 80 40" stroke="#00f0ff" stroke-width="2.5" stroke-dasharray="3,3" opacity="0.8"/>
+  
+  <!-- Chibi Head (Miles Black Mask) -->
+  <ellipse cx="80" cy="65" rx="36" ry="34" fill="#120c18" stroke="#ff003b" stroke-width="3.5" filter="url(#glow-miles)"/>
+  
+  <!-- Red Web Patterns on Mask -->
+  <path d="M 80 34 L 80 96" stroke="#ff003b" stroke-width="1.2" opacity="0.7"/>
+  <path d="M 47 65 Q 80 75 113 65" stroke="#ff003b" stroke-width="1.2" fill="none" opacity="0.7"/>
+  <path d="M 52 48 Q 80 60 108 48" stroke="#ff003b" stroke-width="1.2" fill="none" opacity="0.7"/>
+  <path d="M 52 82 Q 80 70 108 82" stroke="#ff003b" stroke-width="1.2" fill="none" opacity="0.7"/>
+
+  <!-- Big Stylized Comic Eyes -->
+  <!-- Left Eye -->
+  <polygon points="56,52 74,68 54,72" fill="#ffffff" stroke="#ff003b" stroke-width="2.5"/>
+  <polygon points="58,54 71,67 56,70" fill="#00f0ff" opacity="0.3"/>
+  <!-- Right Eye -->
+  <polygon points="104,52 86,68 106,72" fill="#ffffff" stroke="#ff003b" stroke-width="2.5"/>
+  <polygon points="102,54 89,67 104,70" fill="#00f0ff" opacity="0.3"/>
+
+  <!-- Chibi Body in Hoodie/Jacket -->
+  <path d="M 60 98 Q 80 94 100 98 L 108 135 Q 80 142 52 135 Z" fill="#181022" stroke="#ff003b" stroke-width="3"/>
+  <!-- Red Spray Paint Spider Chest Emblem -->
+  <path d="M 80 106 L 76 114 L 84 114 Z" fill="#ff003b"/>
+  <path d="M 73 110 Q 64 104 60 114 M 87 110 Q 96 104 100 114" stroke="#ff003b" stroke-width="2" fill="none"/>
+  <path d="M 74 116 Q 66 128 62 134 M 86 116 Q 94 128 98 134" stroke="#ff003b" stroke-width="2" fill="none"/>
+
+  <!-- Hands with Web Shooters -->
+  <circle cx="48" cy="115" r="8" fill="#ff003b" stroke="#120c18" stroke-width="2"/>
+  <circle cx="112" cy="115" r="8" fill="#ff003b" stroke="#120c18" stroke-width="2"/>
+  <path d="M 44 115 L 20 105" stroke="#00f0ff" stroke-width="2.5"/>
+  <polygon points="18,103 26,105 22,111" fill="#00f0ff"/>
+
+  <!-- Chibi Feet/Sneakers (Iconic Jordan 1 vibe) -->
+  <ellipse cx="65" cy="144" rx="12" ry="7" fill="#ff003b" stroke="#ffffff" stroke-width="1.8"/>
+  <ellipse cx="95" cy="144" rx="12" ry="7" fill="#ff003b" stroke="#ffffff" stroke-width="1.8"/>
+</svg>
