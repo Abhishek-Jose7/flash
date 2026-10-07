@@ -1,62 +1,92 @@
 [
   {
-    "id": "q1",
-    "question": "What is Peter Parker's main superpower?",
-    "options": ["Flying", "Wall-crawling", "Invisibility", "Teleportation"],
-    "correctIndex": 1
+    "id": 1,
+    "difficulty": "EASY",
+    "category": "PYTHON",
+    "question": "Which keyword is used to define a function in Python?",
+    "options": ["function", "def", "func", "lambda"],
+    "correctIndex": 1,
+    "timeLimitSec": 15
   },
   {
-    "id": "q2",
-    "question": "Which tech company created the React framework?",
-    "options": ["Google", "Facebook", "Microsoft", "Twitter"],
-    "correctIndex": 1
+    "id": 2,
+    "difficulty": "EASY",
+    "category": "PYTHON",
+    "question": "What is the output of print(2 ** 3)?",
+    "options": ["6", "9", "8", "5"],
+    "correctIndex": 2,
+    "timeLimitSec": 15
   },
   {
-    "id": "q3",
-    "question": "What powers Miles Morales' 'Venom Strike'?",
-    "options": ["Symbiote suit", "Bio-electricity", "Radioactive blood", "Stark Tech"],
-    "correctIndex": 1
+    "id": 3,
+    "difficulty": "EASY",
+    "category": "GIT",
+    "question": "Which Git command creates a local copy of a remote repository?",
+    "options": ["git clone", "git init", "git commit", "git push"],
+    "correctIndex": 0,
+    "timeLimitSec": 15
   },
   {
-    "id": "q4",
-    "question": "What does API stand for?",
-    "options": ["Application Programming Interface", "Advanced Program Integration", "Apple Protocol Interface", "Automated Process Identifier"],
-    "correctIndex": 0
-  },
-  {
-    "id": "q5",
-    "question": "Who created Spider-Man's Iron Spider suit?",
-    "options": ["Reed Richards", "Otto Octavius", "Tony Stark", "Norman Osborn"],
-    "correctIndex": 2
-  },
-  {
-    "id": "q6",
-    "question": "What does JSON stand for?",
-    "options": ["Java Standard Object Notation", "JavaScript Object Notation", "Just Some Object Notation", "JavasScript Oriented Networking"],
-    "correctIndex": 1
-  },
-  {
-    "id": "q7",
-    "question": "What is the name of the newspaper Peter Parker works for?",
-    "options": ["The Daily Planet", "The New York Times", "The Daily Bugle", "The Daily Globe"],
-    "correctIndex": 2
-  },
-  {
-    "id": "q8",
-    "question": "Which HTML tag is used for linking external CSS files?",
-    "options": ["<css>", "<script>", "<link>", "<style>"],
-    "correctIndex": 2
-  },
-  {
-    "id": "q9",
-    "question": "Who is Spider-Man 2099?",
-    "options": ["Miguel O'Hara", "Ben Reilly", "Miles Morales", "Peter Porker"],
-    "correctIndex": 0
-  },
-  {
-    "id": "q10",
-    "question": "What HTTP status code represents 'Not Found'?",
+    "id": 4,
+    "difficulty": "EASY",
+    "category": "WEB",
+    "question": "Which HTTP status code means 'Not Found'?",
     "options": ["200", "500", "403", "404"],
-    "correctIndex": 3
+    "correctIndex": 3,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 5,
+    "difficulty": "EASY",
+    "category": "DSA",
+    "question": "Which data structure follows Last-In, First-Out (LIFO)?",
+    "options": ["Queue", "Stack", "Linked List", "Tree"],
+    "correctIndex": 1,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 6,
+    "difficulty": "MEDIUM",
+    "category": "PYTHON",
+    "question": "What does print(type({})) display in Python?",
+    "options": ["<class 'list'>", "<class 'set'>", "<class 'dict'>", "<class 'tuple'>"],
+    "correctIndex": 2,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 7,
+    "difficulty": "MEDIUM",
+    "category": "DSA",
+    "question": "What is the time complexity of binary search on a sorted array?",
+    "options": ["O(log n)", "O(n)", "O(n log n)", "O(1)"],
+    "correctIndex": 0,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 8,
+    "difficulty": "MEDIUM",
+    "category": "PYTHON",
+    "question": "Which of these Python types is immutable?",
+    "options": ["list", "dict", "set", "tuple"],
+    "correctIndex": 3,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 9,
+    "difficulty": "MEDIUM",
+    "category": "DATABASE",
+    "question": "Which SQL clause filters rows before they are grouped?",
+    "options": ["HAVING", "WHERE", "ORDER BY", "LIMIT"],
+    "correctIndex": 1,
+    "timeLimitSec": 15
+  },
+  {
+    "id": 10,
+    "difficulty": "MEDIUM",
+    "category": "WEB",
+    "question": "Which HTTP method is normally used to create a new resource in a REST API?",
+    "options": ["GET", "PUT", "POST", "DELETE"],
+    "correctIndex": 2,
+    "timeLimitSec": 15
   }
 ]

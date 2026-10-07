@@ -383,8 +383,7 @@ export class GameStateEngine {
         category: currentQ.category,
         text: currentQ.question,
         options: currentQ.options,
-        timeLimitSec: currentQ.timeLimitSec,
-        spiderPart: currentQ.spiderPart
+        timeLimitSec: currentQ.timeLimitSec
       };
 
       if (this.stage === 'QUESTION_REVEAL' || this.stage === 'VICTORY') {

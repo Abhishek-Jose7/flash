@@ -539,7 +539,6 @@ class PlayerApp {
           document.getElementById('game-round-count').textContent = roundText;
           document.getElementById('q-category-badge').textContent = q.category || 'TECH';
           document.getElementById('q-difficulty-badge').textContent = q.difficulty || 'MEDIUM';
-          document.getElementById('q-part-tag').textContent = `TARGET: ${q.spiderPart || 'SPIDER NODE'}`;
           document.getElementById('q-text').textContent = q.text;
 
           // Render Options
