@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#07060b">
-  <meta name="description" content="Spider-Verse Flashmob: Team Bit vs Team Build. Assemble The Amazing Spider-Man!">
+  <meta name="theme-color" content="#08060e">
+  <meta name="description" content="Spider-Verse Flashmob: Team Bit vs Team Build. Assemble The Spider-Man Emblem!">
   <title>Spider-Verse Flashmob | Assemble The Spider</title>
   <link rel="stylesheet" href="/css/spiderverse.css">
 </head>
@@ -13,7 +13,7 @@
   <div class="vignette-overlay"></div>
 
   <div class="app-container">
-    <!-- Top Status Bar & Swinging Peter Mascot -->
+    <!-- Top Status Bar & Real Swinging Spidey Animation -->
     <header class="status-bar">
       <div class="team-badge">
         <span class="dot" id="user-team-dot"></span>
@@ -21,116 +21,118 @@
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="player-score-tag"><span id="user-score-val">0</span> PTS</span>
-        <button id="btn-mute" aria-label="Toggle Sound" style="background: none; border: none; font-size: 18px; cursor: pointer;">🔊</button>
+        <button id="btn-mute" aria-label="Toggle Audio" style="background: none; border: none; font-size: 17px; cursor: pointer;">🔊</button>
       </div>
 
-      <!-- Top Swinging Chibi Peter Mascot -->
-      <div class="chibi-swing-banner" title="Swinging Peter Parker">
-        <img src="/img/chibi-peter.svg" alt="Swinging Spider-Man" width="55" height="55">
+      <!-- Real Swinging Spider-Man GIF -->
+      <div class="spidey-swing-header" title="Spider-Man Swinging">
+        <img src="/img/spidey-swing.gif" alt="Swinging Spider-Man">
       </div>
     </header>
 
-    <!-- SCREEN 1: JOIN / NICKNAME -->
+    <!-- SCREEN 1: JOIN / NAME ENTRY -->
     <section id="screen-join" class="screen active">
-      <div class="comic-panel highlight" style="text-align: center; margin: auto 0; padding: 20px 16px;">
-        <div class="spider-logo-tag">⚡ FLASHMOB LIVE BATTLE ⚡</div>
-        <h1 class="chromatic-text glitch-anim" style="font-size: 34px; margin-bottom: 6px; letter-spacing: 2px;">
-          SPIDER-VERSE
-        </h1>
-        <h2 style="font-size: 15px; color: #ffcc00; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
-          ASSEMBLE THE AMAZING SPIDER-MAN
+      <div class="modern-panel" style="text-align: center; margin: auto 0; padding: 22px 16px;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-bottom: 12px;">
+          <img src="/img/milesIcon.png" alt="Miles" width="46" height="46" style="filter: drop-shadow(0 2px 8px var(--bit-red-glow));">
+          <div class="badge-tag" style="background: rgba(255,204,0,0.15); border: 1px solid #ffcc00; color: #ffcc00; padding: 4px 10px; font-size: 11px;">
+            ⚡ FLASHMOB ARENA ⚡
+          </div>
+          <img src="/img/gwenIcon.png" alt="Gwen" width="46" height="46" style="filter: drop-shadow(0 2px 8px var(--build-pink-glow));">
+        </div>
+
+        <h1 class="chromatic-title" style="font-size: 32px; margin-bottom: 4px;">SPIDER-VERSE</h1>
+        <h2 style="font-size: 14px; color: #ffcc00; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; font-weight: 800;">
+          ASSEMBLE THE SPIDER-MAN EMBLEM
         </h2>
 
-        <!-- Team Preview Badges -->
-        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 16px;">
-          <div style="background: rgba(255, 0, 59, 0.15); border: 1.5px solid var(--bit-red); border-radius: 8px; padding: 6px 10px; font-size: 12px;">
-            <span style="color: var(--bit-red); font-weight: 800;">TEAM BIT</span><br>
-            <span style="font-size: 10px; color: #aaa;">Miles Morales</span>
+        <!-- Team vs Team Presentation -->
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-bottom: 16px;">
+          <div style="background: rgba(230,0,43,0.12); border: 1.5px solid var(--bit-red); border-radius: 10px; padding: 8px 6px;">
+            <div style="font-family: var(--font-display); font-size: 13px; color: var(--bit-red);">TEAM BIT</div>
+            <div style="font-size: 11px; color: #aaa;">Miles Morales</div>
           </div>
-          <div style="align-self: center; font-family: var(--font-comic); font-size: 14px; color: #ffd700;">VS</div>
-          <div style="background: rgba(255, 0, 127, 0.15); border: 1.5px solid var(--build-pink); border-radius: 8px; padding: 6px 10px; font-size: 12px;">
-            <span style="color: var(--build-pink); font-weight: 800;">TEAM BUILD</span><br>
-            <span style="font-size: 10px; color: #aaa;">Spider-Gwen</span>
+          <div style="font-family: var(--font-display); font-size: 13px; color: #ffd700;">VS</div>
+          <div style="background: rgba(255,20,121,0.12); border: 1.5px solid var(--build-pink); border-radius: 10px; padding: 8px 6px;">
+            <div style="font-family: var(--font-display); font-size: 13px; color: var(--build-pink);">TEAM BUILD</div>
+            <div style="font-size: 11px; color: #aaa;">Spider-Gwen</div>
           </div>
         </div>
 
-        <p style="font-size: 13px; color: #ccc; margin-bottom: 18px; line-height: 1.4;">
-          Scan QR, get balanced into <strong>Team Bit</strong> or <strong>Team Build</strong>, and answer live tech trivia. Every correct answer lights up laser web nodes to assemble the Spider-Man emblem!
+        <p style="font-size: 13px; color: #ccc; margin-bottom: 18px; line-height: 1.45;">
+          Enter your name to be auto-balanced into <strong>Team Bit</strong> or <strong>Team Build</strong>. Answer live trivia fast to light up laser nodes on the Spider-Man emblem!
         </p>
 
-        <div style="position: relative; margin-bottom: 12px;">
-          <input id="input-nick" type="text" maxlength="16" placeholder="ENTER SPIDER CODENAME"
-                 style="width: 100%; padding: 13px 44px 13px 14px; background: rgba(0,0,0,0.65); border: 2px solid var(--bit-cyan);
-                        border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; text-align: center;
-                        text-transform: uppercase; outline: none;">
-          <button id="btn-dice-nick" title="Generate Random Codename"
-                  style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 20px; cursor: pointer;">
-            🎲
-          </button>
+        <div style="margin-bottom: 14px;">
+          <input id="input-nick" type="text" maxlength="20" placeholder="Enter Your Name"
+                 class="modern-input" autocomplete="name" autocorrect="off">
+          <div id="join-error-msg" style="display: none; color: #ff003b; font-size: 12px; font-weight: 700; margin-top: 6px;">
+            Please enter your name to join!
+          </div>
         </div>
 
-        <button id="btn-join" class="spider-btn">⚡ THWIP! JOIN BATTLE ⚡</button>
-        <div style="font-size: 11px; color: #888; margin-top: 12px;" id="conn-status">⚡ CONNECTING TO MULTIVERSE...</div>
+        <button id="btn-join" class="spider-action-btn">⚡ THWIP! JOIN BATTLE ⚡</button>
+        <div style="font-size: 11px; color: #888; margin-top: 14px;" id="conn-status">⚡ CONNECTING TO MULTIVERSE...</div>
       </div>
     </section>
 
     <!-- SCREEN 2: LOBBY / PRE-ROUND STANDBY -->
     <section id="screen-lobby" class="screen">
-      <div class="comic-panel highlight" style="text-align: center; padding: 16px; margin: auto 0;">
-        <div style="display: inline-block; padding: 3px 10px; background: #000; border: 1px solid #ffcc00; border-radius: 20px; font-size: 11px; color: #ffcc00; font-weight: 700; margin-bottom: 10px;">
+      <div id="lobby-panel-card" class="modern-panel" style="text-align: center; padding: 20px 16px; margin: auto 0;">
+        <div class="badge-tag" style="background: #000; border: 1px solid #ffcc00; color: #ffcc00; display: inline-block; margin-bottom: 10px;">
           AGENT RECRUITED
         </div>
-        <h2 id="lobby-team-title" class="chromatic-text" style="font-size: 26px; margin-bottom: 4px;">
+        <h2 id="lobby-team-title" class="chromatic-title" style="font-size: 26px; margin-bottom: 2px;">
           YOU ARE ON TEAM BIT
         </h2>
-        <div id="lobby-team-hero" style="font-size: 13px; color: #aaa; margin-bottom: 16px;">
+        <div id="lobby-team-hero" style="font-size: 13px; color: #bbb; margin-bottom: 16px;">
           Fighting alongside Miles Morales
         </div>
 
-        <!-- Mascot Display -->
-        <div id="lobby-mascot-box" style="width: 110px; height: 110px; margin: 0 auto 16px; position: relative;">
-          <img id="lobby-mascot-img" src="/img/chibi-miles.svg" alt="Team Mascot" width="110" height="110" style="filter: drop-shadow(0 0 14px var(--team-glow, #ff003b));">
+        <!-- Real Character Hero Image -->
+        <div style="width: 130px; height: 140px; margin: 0 auto 16px; position: relative;">
+          <img id="lobby-mascot-img" src="/img/miles.png" alt="Team Hero" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 16px var(--bit-red-glow));">
         </div>
 
-        <div style="background: rgba(0, 0, 0, 0.45); border-radius: 10px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="font-size: 11px; color: #aaa; text-transform: uppercase;">YOUR CODENAME:</div>
-          <div id="user-nick-display" style="font-family: var(--font-comic); font-size: 18px; color: #fff; margin-top: 2px;">-</div>
+        <div style="background: rgba(0,0,0,0.5); border-radius: 10px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-size: 11px; color: #aaa; text-transform: uppercase;">YOUR NAME:</div>
+          <div id="user-nick-display" style="font-size: 17px; font-weight: 800; color: #fff; margin-top: 2px;">-</div>
           <div style="font-size: 12px; color: var(--bit-cyan); margin-top: 6px;">
-            👥 <span id="lobby-online-count">0</span> Slingers in Multiverse
+            👥 <span id="lobby-online-count">0</span> Slingers Ready in Multiverse
           </div>
         </div>
 
         <div style="font-size: 13px; color: #ffd700; font-weight: 700; line-height: 1.4;">
-          ⏳ Waiting for Host Admin to launch Round 1...<br>
-          <span style="font-size: 12px; color: #aaa; font-weight: normal;">Get ready! The questions and spider appear on your phone.</span>
+          ⏳ Waiting for Host Admin to launch the quiz...<br>
+          <span style="font-size: 12px; color: #aaa; font-weight: normal;">Questions will appear automatically one by one on your phone!</span>
         </div>
       </div>
     </section>
 
-    <!-- SCREEN 3: ACTIVE GAME (SPLIT SCREEN: UPPER QUIZ + LOWER COMPACT SPIDER) -->
+    <!-- SCREEN 3: ACTIVE GAME (SPLIT SCREEN: UPPER QUIZ + LOWER AUTHENTIC SPIDER) -->
     <section id="screen-game" class="screen">
       <div class="split-layout">
         <!-- UPPER HALF: QUESTIONS / COUNTDOWN / REVEAL -->
         <div class="upper-quiz-section">
-          <!-- Countdown Overlay State -->
+          <!-- Countdown State -->
           <div id="view-countdown" class="countdown-box" style="display: none;">
             <div style="font-size: 14px; color: #ffcc00; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
               INCOMING QUESTION
             </div>
             <div id="countdown-num" class="countdown-digits">3</div>
-            <div class="chromatic-text" style="font-size: 16px; color: var(--bit-cyan);">GET READY TO TAP!</div>
+            <div class="chromatic-title" style="font-size: 16px; color: var(--bit-cyan);">GET READY TO TAP!</div>
           </div>
 
-          <!-- Active Question Card State -->
+          <!-- Question Card State -->
           <div id="view-question" style="display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
             <div class="question-card">
               <div class="question-meta-row">
-                <span id="q-meta-round" style="font-family: var(--font-comic); font-size: 12px; color: #ffcc00;">ROUND 1 / 8</span>
-                <span id="q-category-badge" style="font-size: 10px; background: rgba(0,240,255,0.2); border: 1px solid var(--bit-cyan); color: var(--bit-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 700;">PYTHON</span>
-                <span id="q-difficulty-badge" class="difficulty-badge">EASY</span>
+                <span id="q-meta-round" class="badge-round">ROUND 1 / 8</span>
+                <span id="q-category-badge" class="badge-tag badge-category">CYBER SECURITY</span>
+                <span id="q-difficulty-badge" class="badge-tag badge-difficulty">EASY</span>
               </div>
-              <div id="q-part-tag" class="spider-part-badge" style="margin-bottom: 4px;">TARGET: HEAD & FANGS</div>
-              <div id="q-text" class="question-text">Loading question...</div>
+              <div id="q-part-tag" class="question-target-part">TARGET: HEAD & FANGS</div>
+              <div id="q-text" class="question-text-box">Loading question...</div>
             </div>
 
             <!-- Timer Countdown Bar -->
@@ -138,7 +140,7 @@
               <div id="timer-bar-fill" class="timer-bar-fill"></div>
             </div>
 
-            <!-- 4 Kahoot-Style MCQ Buttons (2x2 Grid) -->
+            <!-- 4 Kahoot-Style MCQ Cards (2x2 Grid) -->
             <div class="mcq-grid">
               <button class="mcq-btn opt-0" data-opt="0">
                 <span class="mcq-icon">🕷️</span>
@@ -161,17 +163,17 @@
 
           <!-- Interim Reveal State -->
           <div id="view-reveal" style="display: none; flex-direction: column; justify-content: center; flex: 1;">
-            <div id="reveal-box" class="reveal-box">
-              <div id="reveal-title" class="reveal-title chromatic-text">THWIP! CORRECT!</div>
+            <div id="reveal-box" class="reveal-card">
+              <div id="reveal-title" class="reveal-card-title chromatic-title">THWIP! CORRECT!</div>
               <div id="reveal-sub" style="font-size: 13px; color: #ddd; margin-bottom: 6px;">+850 Points added to your team!</div>
-              <div style="font-size: 11px; color: #aaa;">Watch the spider logo below light up with newly connected nodes!</div>
+              <div style="font-size: 11px; color: #aaa;">Watch your team's Spider-Man emblem below light up!</div>
             </div>
           </div>
         </div>
 
-        <!-- LOWER HALF: COMPACT SPIDER-MAN LOGO & LIVE TEAM BATTLE -->
+        <!-- LOWER HALF: AUTHENTIC SPIDER-MAN EMBLEM & LIVE BATTLE METER -->
         <div class="lower-spider-section">
-          <!-- Compact Spider-Man Canvas -->
+          <!-- Authentic Marvel Spider-Man Canvas -->
           <div class="spider-canvas-wrapper">
             <canvas id="mobile-spider-canvas" class="spider-canvas"></canvas>
           </div>
@@ -180,7 +182,7 @@
           <div class="battle-bar-container">
             <div class="battle-teams-header">
               <span style="color: var(--bit-red);"><strong id="bit-pct-val">BIT: 0%</strong></span>
-              <span style="font-size: 11px; color: #ffd700;">⚡ SPIDER ASSEMBLY ⚡</span>
+              <span style="font-size: 10px; color: #ffd700; letter-spacing: 0.5px;">⚡ ASSEMBLE SPIDER-MAN ⚡</span>
               <span style="color: var(--build-pink);"><strong id="build-pct-val">BUILD: 0%</strong></span>
             </div>
             <div class="battle-track">
@@ -189,45 +191,45 @@
             </div>
           </div>
 
-          <!-- Corner Chibi Spideys (Animated Chibi Mascots) -->
-          <div class="chibi-corner-bit" title="Team Bit: Miles Morales">
-            <img src="/img/chibi-miles.svg" alt="Chibi Miles" width="48" height="48">
+          <!-- Real Character Art Corners -->
+          <div class="char-corner-bit" title="Team Bit: Miles Morales">
+            <img src="/img/miles.png" alt="Miles Morales">
           </div>
-          <div class="chibi-corner-build" title="Team Build: Spider-Gwen">
-            <img src="/img/chibi-gwen.svg" alt="Chibi Gwen" width="48" height="48">
+          <div class="char-corner-build" title="Team Build: Spider-Gwen">
+            <img src="/img/gwen.png" alt="Spider-Gwen">
           </div>
 
-          <!-- Tap Comic Burst Sticker Container -->
+          <!-- Tap Action Sticker Container -->
           <div id="sticker-container" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden;"></div>
         </div>
       </div>
     </section>
 
-    <!-- SCREEN 4: VICTORY & TOP 5 MVPs -->
+    <!-- SCREEN 4: VICTORY & TOP 5 LEADERBOARD -->
     <section id="screen-victory" class="screen">
-      <div class="comic-panel highlight" style="text-align: center; margin: auto 0; padding: 20px 14px;">
-        <div style="font-size: 13px; color: #ffd700; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">
+      <div class="victory-card">
+        <div style="font-size: 13px; color: #ffd700; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
           👑 MULTIVERSE CHAMPIONS 👑
         </div>
-        <h1 id="victory-team-banner" class="chromatic-text glitch-anim" style="font-size: 32px; margin-bottom: 6px;">
+        <h1 id="victory-team-banner" class="chromatic-title" style="font-size: 32px; margin-bottom: 4px;">
           TEAM BIT WINS!
         </h1>
-        <div id="victory-sub-banner" style="font-size: 13px; color: #ffd700; font-weight: 700; margin-bottom: 14px;">
-          🏆 THE AMAZING SPIDER-MAN IS FULLY ASSEMBLED!
+        <div id="victory-sub-banner" style="font-size: 13px; color: #ffd700; font-weight: 700; margin-bottom: 16px;">
+          🏆 THE SPIDER-MAN EMBLEM IS FULLY ASSEMBLED!
         </div>
 
-        <!-- Top 5 MVPs from the winning team -->
-        <div style="background: rgba(0,0,0,0.6); border-radius: 12px; padding: 12px; border: 2px solid #ffd700;">
-          <h2 style="font-family: var(--font-comic); font-size: 18px; color: #ffd700; letter-spacing: 1px; margin-bottom: 8px;">
+        <!-- Top 5 MVPs Leaderboard Table with Accuracy & Points -->
+        <div style="background: rgba(0,0,0,0.65); border-radius: 12px; padding: 14px; border: 1.5px solid #ffd700;">
+          <h2 style="font-family: var(--font-display); font-size: 17px; color: #ffd700; letter-spacing: 1px; margin-bottom: 10px;">
             ⭐ TOP 5 MVPs (TOP CONTRIBUTORS) ⭐
           </h2>
-          <ul id="top5-list-mvp" class="top5-list">
-            <!-- Dynamically populated -->
+          <ul id="top5-list-mvp" class="leaderboard-list">
+            <!-- Dynamically populated with rank, name, questions correct, score -->
           </ul>
         </div>
 
-        <p style="font-size: 12px; color: #aaa; margin-top: 14px;">
-          Thank you for playing the Spider-Verse Flashmob Live Challenge!
+        <p style="font-size: 12px; color: #aaa; margin-top: 16px;">
+          Flashmob Quiz Complete! Thank you for participating.
         </p>
       </div>
     </section>

@@ -12,6 +12,8 @@ export class GameStateEngine {
     this.currentQuestionIndex = 0;
     this.questionStartTime = 0;
     this.questionDurationSec = 15;
+    this.revealStartTime = 0;
+    this.revealDurationSec = 4;
     this.countdownSeconds = 3;
     this.winnerTeam = null;
 
@@ -215,6 +217,7 @@ export class GameStateEngine {
   revealAnswer() {
     if (this.stage === 'VICTORY') return;
     this.stage = 'QUESTION_REVEAL';
+    this.revealStartTime = Date.now();
   }
 
   nextQuestion() {
@@ -303,12 +306,17 @@ export class GameStateEngine {
       ? Math.max(0, Math.ceil((this.questionDurationSec * 1000 - (Date.now() - this.questionStartTime)) / 1000))
       : 0;
 
+    const revealRemainingSec = this.stage === 'QUESTION_REVEAL'
+      ? Math.max(0, Math.ceil((this.revealDurationSec * 1000 - (Date.now() - this.revealStartTime)) / 1000))
+      : 0;
+
     const state = {
       stage: this.stage,
       qIndex: this.currentQuestionIndex,
       totalQuestions: this.questions.length,
       countdown: this.countdownSeconds,
       remainingSec,
+      revealRemainingSec,
       winnerTeam: this.winnerTeam,
       teams: {
         bit: {

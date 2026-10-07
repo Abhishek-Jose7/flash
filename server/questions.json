@@ -2,60 +2,60 @@
   {
     "id": 1,
     "difficulty": "EASY",
-    "category": "PYTHON",
-    "question": "In Python, which keyword is used to define a function?",
-    "options": ["func", "def", "function", "define"],
-    "correctIndex": 1,
+    "category": "CYBER SECURITY",
+    "question": "What type of cyber attack tricks users into revealing confidential passwords through fake emails or websites?",
+    "options": ["Phishing", "DDoS Attack", "SQL Injection", "Brute Force"],
+    "correctIndex": 0,
     "timeLimitSec": 15,
     "spiderPart": "Head & Fangs Awoken"
   },
   {
     "id": 2,
     "difficulty": "EASY",
+    "category": "PYTHON",
+    "question": "In Python, which keyword is used to define a function?",
+    "options": ["func", "def", "function", "define"],
+    "correctIndex": 1,
+    "timeLimitSec": 15,
+    "spiderPart": "Thorax Core & Heart"
+  },
+  {
+    "id": 3,
+    "difficulty": "MEDIUM",
     "category": "WEB DEV",
     "question": "What does CSS stand for in web development?",
     "options": ["Computer Style Sheets", "Creative Styling System", "Cascading Style Sheets", "Central Sheet Styles"],
     "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "Thorax Core & Spine"
+    "spiderPart": "Spine & Abdomen Needle"
   },
   {
-    "id": 3,
+    "id": 4,
     "difficulty": "MEDIUM",
     "category": "GIT",
     "question": "Which Git command creates a new branch AND immediately switches to it?",
     "options": ["git branch -new <name>", "git checkout -b <name>", "git switch --make <name>", "git create <name>"],
     "correctIndex": 1,
     "timeLimitSec": 15,
-    "spiderPart": "Abdomen Needle Blade"
-  },
-  {
-    "id": 4,
-    "difficulty": "MEDIUM",
-    "category": "JAVASCRIPT",
-    "question": "In JavaScript, what does `typeof NaN` evaluate to?",
-    "options": ["'undefined'", "'NaN'", "'number'", "'object'"],
-    "correctIndex": 2,
-    "timeLimitSec": 15,
     "spiderPart": "Upper Leg Tendons"
   },
   {
     "id": 5,
     "difficulty": "MEDIUM",
-    "category": "CS & ALGORITHMS",
-    "question": "What is the average time complexity of searching a key in a Hash Map?",
-    "options": ["O(log n)", "O(n)", "O(1)", "O(n²)"],
-    "correctIndex": 2,
+    "category": "CYBER SECURITY",
+    "question": "Which attack occurs when malicious user input is directly concatenated into a backend database query?",
+    "options": ["Cross-Site Scripting (XSS)", "SQL Injection (SQLi)", "Man-in-the-Middle (MitM)", "Buffer Overflow"],
+    "correctIndex": 1,
     "timeLimitSec": 15,
     "spiderPart": "Upper Arches & Talons"
   },
   {
     "id": 6,
-    "difficulty": "HARD",
-    "category": "NETWORKING",
-    "question": "Which humorous HTTP status code officially means 'I'm a teapot'?",
-    "options": ["404", "418", "500", "420"],
-    "correctIndex": 1,
+    "difficulty": "MEDIUM",
+    "category": "ALGORITHMS",
+    "question": "What is the average time complexity of searching a key in a Hash Map?",
+    "options": ["O(log n)", "O(n)", "O(1)", "O(n²)"],
+    "correctIndex": 2,
     "timeLimitSec": 15,
     "spiderPart": "Lower Leg Roots"
   },
@@ -72,11 +72,11 @@
   {
     "id": 8,
     "difficulty": "HARD - BOSS ROUND",
-    "category": "JS CORE",
-    "question": "In JavaScript, what does `===` compare that `==` does NOT?",
-    "options": ["Memory pointer address", "Both Value and Data Type (Strict)", "Object prototypes", "Execution context scope"],
-    "correctIndex": 1,
+    "category": "JAVASCRIPT",
+    "question": "In JavaScript, what does `typeof NaN` evaluate to?",
+    "options": ["'undefined'", "'NaN'", "'number'", "'object'"],
+    "correctIndex": 2,
     "timeLimitSec": 15,
-    "spiderPart": "AMAZING SPIDER-MAN 2 100% COMPLETE"
+    "spiderPart": "AMAZING SPIDER-MAN 100% ASSEMBLED"
   }
 ]

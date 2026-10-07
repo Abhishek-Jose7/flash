@@ -159,6 +159,12 @@ function startTicker() {
         engine.revealAnswer();
       }
       requestBroadcast();
+    } else if (engine.stage === 'QUESTION_REVEAL') {
+      const elapsed = Date.now() - engine.revealStartTime;
+      if (elapsed >= (engine.revealDurationSec || 4) * 1000) {
+        engine.nextQuestion();
+      }
+      requestBroadcast();
     }
   }, 1000);
 }

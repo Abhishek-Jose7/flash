@@ -8,11 +8,10 @@ class PlayerApp {
     this.nickname = localStorage.getItem('spider_nick') || '';
     this.player = null;
     this.state = null;
-    this.graphData = null;
-    this.selectedOption = null;
     this.hasAnswered = false;
+    this.selectedOption = null;
 
-    // Spider Canvas Renderer instance
+    // Canvas visualizer instance
     this.spiderRenderer = null;
 
     // Screens
@@ -44,17 +43,6 @@ class PlayerApp {
     return id;
   }
 
-  generateRandomNickname() {
-    const handles = [
-      'Cyber-Slinger', 'Bit-Crawler', 'Glitch-Spider', 'Web-Architect',
-      'Kernel-Spidey', 'Async-Slinger', 'Neon-Byte', 'Null-Pointer',
-      'Ghost-Spider', 'Syntax-Crawler', 'Bug-Buster', 'Quantum-Spidey'
-    ];
-    const randHandle = handles[Math.floor(Math.random() * handles.length)];
-    const randNum = Math.floor(10 + Math.random() * 90);
-    return `${randHandle}-${randNum}`;
-  }
-
   initCanvas() {
     const canvas = document.getElementById('mobile-spider-canvas');
     if (canvas) {
@@ -64,27 +52,27 @@ class PlayerApp {
   }
 
   bindEvents() {
-    // Nickname generator dice
-    const btnDice = document.getElementById('btn-dice-nick');
-    const inputNick = document.getElementById('input-nick');
-    if (btnDice && inputNick) {
-      btnDice.addEventListener('click', () => {
-        sound.init();
-        sound.playTap();
-        inputNick.value = this.generateRandomNickname();
-      });
-    }
-
-    // Join button
+    // Join form
     const btnJoin = document.getElementById('btn-join');
+    const inputNick = document.getElementById('input-nick');
+    const joinError = document.getElementById('join-error-msg');
+
     if (btnJoin && inputNick) {
       if (this.nickname) inputNick.value = this.nickname;
-      else inputNick.value = this.generateRandomNickname();
 
       const submitJoin = () => {
+        const val = inputNick.value.trim();
+        if (!val) {
+          if (joinError) joinError.style.display = 'block';
+          inputNick.focus();
+          return;
+        }
+
+        if (joinError) joinError.style.display = 'none';
         sound.init();
         sound.playThwip();
-        this.nickname = inputNick.value.trim() || this.generateRandomNickname();
+
+        this.nickname = val;
         localStorage.setItem('spider_nick', this.nickname);
         this.sendJoin();
       };
@@ -93,14 +81,17 @@ class PlayerApp {
       inputNick.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') submitJoin();
       });
+      inputNick.addEventListener('input', () => {
+        if (joinError) joinError.style.display = 'none';
+      });
     }
 
     // MCQ Answer Buttons
     const mcqBtns = document.querySelectorAll('.mcq-btn');
     mcqBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         const opt = parseInt(btn.dataset.opt, 10);
-        this.submitAnswer(opt, e);
+        this.submitAnswer(opt);
       });
     });
 
@@ -127,7 +118,6 @@ class PlayerApp {
         connStatus.style.color = '#00ff66';
       }
 
-      // Automatically re-join if player identity already exists in localStorage
       if (this.nickname) {
         this.sendJoin();
       }
@@ -157,7 +147,7 @@ class PlayerApp {
   }
 
   sendJoin() {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN && this.nickname) {
       this.ws.send(JSON.stringify({
         type: 'JOIN',
         playerId: this.playerId,
@@ -166,27 +156,27 @@ class PlayerApp {
     }
   }
 
-  submitAnswer(opt, event = null) {
+  submitAnswer(opt) {
     if (this.hasAnswered || !this.state || this.state.stage !== 'QUESTION_ACTIVE') return;
 
     sound.playTap();
-    if (navigator.vibrate) navigator.vibrate(40);
+    if (navigator.vibrate) navigator.vibrate(50);
 
     this.hasAnswered = true;
     this.selectedOption = opt;
 
-    // Visual button feedback
+    // Apply immediate accepted & locked states to buttons
     const btns = document.querySelectorAll('.mcq-btn');
     btns.forEach(b => {
       if (parseInt(b.dataset.opt, 10) === opt) {
-        b.classList.add('selected');
+        b.classList.add('selected-accepted');
       } else {
         b.classList.add('dimmed');
       }
     });
 
-    // Spawn comic sticker pop effect near click
-    this.spawnComicSticker(event);
+    // Spawn comic action sticker popup
+    this.spawnActionSticker();
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
@@ -197,31 +187,26 @@ class PlayerApp {
     }
   }
 
-  spawnComicSticker(event) {
+  spawnActionSticker() {
     const container = document.getElementById('sticker-container');
     if (!container) return;
 
     const img = document.createElement('img');
     img.src = Math.random() > 0.4 ? '/img/sticker-thwip.svg' : '/img/sticker-boom.svg';
-    img.className = 'comic-sticker';
+    img.className = 'action-sticker';
 
-    // Position sticker randomly across the lower panel
-    const x = Math.floor(20 + Math.random() * 55);
-    const y = Math.floor(15 + Math.random() * 45);
+    const x = Math.floor(25 + Math.random() * 45);
+    const y = Math.floor(15 + Math.random() * 40);
     img.style.left = `${x}%`;
     img.style.top = `${y}%`;
 
     container.appendChild(img);
-    setTimeout(() => img.remove(), 700);
+    setTimeout(() => img.remove(), 600);
   }
 
   handleMessage(msg) {
     switch (msg.type) {
       case 'INIT': {
-        this.graphData = msg.graph;
-        if (this.spiderRenderer && this.graphData) {
-          this.spiderRenderer.setGraphData(this.graphData.nodes, this.graphData.edges);
-        }
         this.updateState(msg.state);
         break;
       }
@@ -269,7 +254,7 @@ class PlayerApp {
     // Update body theme classes
     document.body.className = isBit ? 'team-bit' : 'team-build';
 
-    // Header status bar
+    // Header bar
     const teamNameEl = document.getElementById('user-team-name');
     const teamDotEl = document.getElementById('user-team-dot');
     const userScoreEl = document.getElementById('user-score-val');
@@ -285,10 +270,11 @@ class PlayerApp {
     if (userScoreEl) userScoreEl.textContent = (this.player.score || 0).toLocaleString();
     if (userNickEl) userNickEl.textContent = this.player.nickname;
 
-    // Lobby screen info
+    // Lobby Screen
     const lobbyTitle = document.getElementById('lobby-team-title');
     const lobbyHero = document.getElementById('lobby-team-hero');
     const lobbyMascot = document.getElementById('lobby-mascot-img');
+    const lobbyCard = document.getElementById('lobby-panel-card');
 
     if (lobbyTitle) {
       lobbyTitle.textContent = isBit ? 'YOU ARE ON TEAM BIT' : 'YOU ARE ON TEAM BUILD';
@@ -298,15 +284,19 @@ class PlayerApp {
       lobbyHero.textContent = isBit ? 'Fighting alongside Miles Morales' : 'Fighting alongside Spider-Gwen';
     }
     if (lobbyMascot) {
-      lobbyMascot.src = isBit ? '/img/chibi-miles.svg' : '/img/chibi-gwen.svg';
+      lobbyMascot.src = isBit ? '/img/miles.png' : '/img/gwen.png';
+      lobbyMascot.style.filter = `drop-shadow(0 4px 16px ${isBit ? 'var(--bit-red-glow)' : 'var(--build-pink-glow)'})`;
+    }
+    if (lobbyCard) {
+      lobbyCard.className = `modern-panel ${isBit ? 'highlight-bit' : 'highlight-build'}`;
     }
 
     // Set Spider Canvas Theme
     if (this.spiderRenderer) {
       if (isBit) {
-        this.spiderRenderer.setTheme('#ff003b', '#00f0ff', 'rgba(255, 0, 59, 0.8)');
+        this.spiderRenderer.setTheme('#e6002b', '#00e5ff', 'rgba(230, 0, 43, 0.85)');
       } else {
-        this.spiderRenderer.setTheme('#ff007f', '#00e5ff', 'rgba(255, 0, 127, 0.8)');
+        this.spiderRenderer.setTheme('#ff1479', '#00f5d4', 'rgba(255, 20, 121, 0.85)');
       }
     }
   }
@@ -324,7 +314,7 @@ class PlayerApp {
     if (this.spiderRenderer && this.player && state.teams) {
       const myTeam = state.teams[this.player.teamId];
       if (myTeam) {
-        this.spiderRenderer.updateUnlocked(myTeam.unlockedNodeIds, myTeam.unlockedEdges);
+        this.spiderRenderer.setProgress(myTeam.percent || 0);
       }
     }
 
@@ -416,7 +406,7 @@ class PlayerApp {
             if (label && q.options && q.options[idx]) {
               label.textContent = q.options[idx];
             }
-            btn.classList.remove('selected', 'dimmed', 'correct-highlight');
+            btn.classList.remove('selected-accepted', 'dimmed', 'reveal-correct', 'reveal-wrong');
           });
 
           // Re-highlight if reconnecting
@@ -424,7 +414,7 @@ class PlayerApp {
             this.hasAnswered = true;
             const chosen = state.playerAnswer.optionIndex;
             btns.forEach(b => {
-              if (parseInt(b.dataset.opt, 10) === chosen) b.classList.add('selected');
+              if (parseInt(b.dataset.opt, 10) === chosen) b.classList.add('selected-accepted');
               else b.classList.add('dimmed');
             });
           }
@@ -448,9 +438,24 @@ class PlayerApp {
         const resSub = document.getElementById('reveal-sub');
         const resBox = document.getElementById('reveal-box');
 
+        // Reveal accepted/correct/wrong button styles
+        const btns = document.querySelectorAll('.mcq-btn');
+        if (q && q.correctIndex !== undefined) {
+          btns.forEach((btn, idx) => {
+            btn.classList.remove('selected-accepted');
+            if (idx === q.correctIndex) {
+              btn.classList.add('reveal-correct');
+            } else if (this.selectedOption === idx) {
+              btn.classList.add('reveal-wrong');
+            } else {
+              btn.classList.add('dimmed');
+            }
+          });
+        }
+
         if (state.playerAnswer) {
           if (state.playerAnswer.isCorrect) {
-            if (resBox) resBox.className = 'reveal-box correct';
+            if (resBox) resBox.className = 'reveal-card correct';
             if (resTitle) {
               resTitle.textContent = '⚡ THWIP! CORRECT!';
               resTitle.style.color = '#00ff66';
@@ -459,7 +464,7 @@ class PlayerApp {
               resSub.textContent = `+${state.playerAnswer.points} Points added to ${this.player.teamId === 'bit' ? 'Team Bit' : 'Team Build'}!`;
             }
           } else {
-            if (resBox) resBox.className = 'reveal-box wrong';
+            if (resBox) resBox.className = 'reveal-card wrong';
             if (resTitle) {
               resTitle.textContent = '🕸️ MISSED!';
               resTitle.style.color = '#ff003b';
@@ -469,7 +474,7 @@ class PlayerApp {
             }
           }
         } else {
-          if (resBox) resBox.className = 'reveal-box';
+          if (resBox) resBox.className = 'reveal-card';
           if (resTitle) {
             resTitle.textContent = '⏳ TIME UP!';
             resTitle.style.color = '#ffcc00';
@@ -497,21 +502,29 @@ class PlayerApp {
 
         if (winSub) {
           winSub.textContent = isWinner
-            ? '🏆 YOUR TEAM FULLY ASSEMBLED THE AMAZING SPIDER-MAN!'
-            : '🕸️ VALIANT EFFORT! The Spider-Verse is saved!';
+            ? '🏆 YOUR TEAM FULLY ASSEMBLED THE SPIDER-MAN EMBLEM!'
+            : '🕸️ VALIANT BATTLE! The Spider-Verse is saved!';
         }
 
-        // Populate Top 5 MVPs from the winning team
+        // Populate Top 5 MVPs Leaderboard Table with Accuracy (Correct Count) & Score
         const top5List = document.getElementById('top5-list-mvp');
         if (top5List && state.topContributors && state.winnerTeam) {
           const mvps = state.topContributors[state.winnerTeam] || [];
-          top5List.innerHTML = mvps.map((mvp, idx) => `
-            <li class="top5-item ${idx === 0 ? 'rank-1' : ''}">
-              <span class="top5-rank">#${idx + 1}</span>
-              <span class="top5-name">${mvp.nickname} ${mvp.id === this.player.id ? '⭐ (YOU)' : ''}</span>
-              <span class="top5-score">${(mvp.score || 0).toLocaleString()} PTS</span>
-            </li>
-          `).join('');
+          top5List.innerHTML = mvps.map((mvp, idx) => {
+            const isMe = mvp.id === this.player.id;
+            const rankIcon = idx === 0 ? '👑' : `#${idx + 1}`;
+            const correctCount = mvp.correctCount || 0;
+            const totalQ = state.totalQuestions || 8;
+
+            return `
+              <li class="leaderboard-row ${idx === 0 ? 'rank-1' : ''} ${isMe ? 'is-me' : ''}">
+                <span class="rank-col">${rankIcon}</span>
+                <span class="name-col">${mvp.nickname} ${isMe ? '⭐ (YOU)' : ''}</span>
+                <span class="accuracy-col">🎯 ${correctCount}/${totalQ} Correct</span>
+                <span class="score-col">${(mvp.score || 0).toLocaleString()} PTS</span>
+              </li>
+            `;
+          }).join('');
         }
         break;
       }
@@ -522,7 +535,7 @@ class PlayerApp {
   }
 }
 
-// Start player app on DOM ready
+// Start player app
 window.addEventListener('DOMContentLoaded', () => {
   new PlayerApp();
 });
