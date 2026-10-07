@@ -9,6 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/webhead.css?v=tracker11">
+  <!-- Preload critical UI images for instant loading on mobile -->
+  <link rel="preload" as="image" href="/img/spider-alert.webp">
+  <link rel="preload" as="image" href="/img/user-maze-cutout.webp">
+  <link rel="preload" as="image" href="/img/snoopy-standing.webp">
+  <link rel="preload" as="image" href="/img/spider-emblem.svg">
+  <link rel="preload" as="image" href="/img/spider-man-head-pixel.webp">
 </head>
 <body class="player-page">
   <!-- Hidden elements that playerApp.js expects but we don't need in the new UI -->
@@ -32,7 +38,7 @@
   <div class="tracker-device">
     <!-- Pop-out images attached to device -->
     <img src="/img/spider-alert.webp" class="header-left-img" alt="spider alert">
-    <div id="top-conn-status" style="position: absolute; top: 65px; left: -5px; font-size: 8px; color: var(--text-cyan); z-index: 50;">[CONNECTING]</div>
+    <div id="top-conn-status" style="position: absolute; top: 75px; left: 20px; font-size: 8px; color: var(--text-cyan); z-index: 50;">[CONNECTING]</div>
     <img src="/img/user-maze-cutout.webp" class="header-right-img" alt="user maze">
     <img src="/img/snoopy-standing.webp" alt="Snoopy" class="snoopy-img">
     
