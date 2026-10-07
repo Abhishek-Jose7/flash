@@ -1,0 +1,39 @@
+services:
+  spiderverse-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ADMIN_KEY=${ADMIN_KEY:-spiderverse}
+    expose:
+      - "3000"
+    networks:
+      - spiderverse-net
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - spiderverse-net
+    depends_on:
+      - spiderverse-app
+
+networks:
+  spiderverse-net:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

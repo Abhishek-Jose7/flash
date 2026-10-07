@@ -27,6 +27,9 @@ const messageLimiter = new RateLimiter({ maxTokens: 25, refillRate: 10, maxPaylo
 // Connection tracking: ws -> { playerId, ip, isAlive, lastActive }
 const clients = new Map();
 
+// Enable proxy trusting for Caddy, AWS ELB, and Cloudflare reverse proxies
+app.set('trust proxy', 1);
+
 // --- HTTP Middleware & Static File Streaming ---
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');

@@ -1,0 +1,14 @@
+# Caddy Automated HTTPS Reverse Proxy for Spider-Verse Flashmob
+# Automatically obtains and renews free SSL certificates for your custom domain
+
+{$DOMAIN_NAME:localhost} {
+    encode gzip zstd
+
+    # Reverse proxy to Node.js container with full WebSocket support
+    reverse_proxy spiderverse-app:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
