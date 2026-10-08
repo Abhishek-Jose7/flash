@@ -398,8 +398,8 @@ export class GameStateEngine {
 
     if (this.stage === 'VICTORY') {
       state.topContributors = {
-        bit: this.getTopContributors('bit', 5),
-        build: this.getTopContributors('build', 5)
+        bit: this.getTopContributors('bit', 10),
+        build: this.getTopContributors('build', 10)
       };
     }
 
@@ -450,3 +450,4 @@ export class GameStateEngine {
     return base;
   }
 }
+

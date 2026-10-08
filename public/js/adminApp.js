@@ -260,6 +260,34 @@ class AdminApp {
           `${state.teams.build.score.toLocaleString()} Correct Answers | ${state.teams.build.percent}% Built | ${state.teams.build.playerCount} Players`;
       }
     }
+    if (state.stage === 'VICTORY' && state.topContributors && state.winnerTeam) {
+      const leaderboardSec = document.getElementById('admin-leaderboard-section');
+      const mvpList = document.getElementById('admin-mvp-list');
+      const winnerName = document.getElementById('admin-winner-team-name');
+      
+      if (leaderboardSec && mvpList && winnerName) {
+        leaderboardSec.style.display = 'block';
+        const teamName = state.winnerTeam === 'bit' ? 'TEAM BIT WINS!' : 'TEAM BUILD WINS!';
+        winnerName.textContent = teamName;
+        winnerName.style.color = state.winnerTeam === 'bit' ? 'var(--bit-red)' : 'var(--build-pink)';
+        
+        const mvps = state.topContributors[state.winnerTeam] || [];
+        mvpList.innerHTML = mvps.map((mvp, idx) => {
+            const correct = mvp.correctCount || 0;
+            const time = (mvp.totalResponseTimeMs / 1000).toFixed(1);
+            const score = mvp.score || 0;
+            return '<li style="padding: 8px 0; border-bottom: 1px dashed #333; display: flex; justify-content: space-between; font-family: monospace;">' +
+                   '<span style="color:#aaa;">#' + (idx+1) + '</span>' +
+                   '<strong style="flex-grow:1; margin-left: 10px; color:#fff;">' + mvp.nickname + '</strong>' +
+                   '<span style="color:var(--text-cyan);">' + correct + '/' + (state.totalQuestions||10) + ' (' + time + 's)</span>' +
+                   '<span style="margin-left:15px; color:var(--orchid);">' + score + ' pts</span>' +
+                   '</li>';
+        }).join('');
+      }
+    } else {
+      const leaderboardSec = document.getElementById('admin-leaderboard-section');
+      if (leaderboardSec) leaderboardSec.style.display = 'none';
+    }
   }
 }
 

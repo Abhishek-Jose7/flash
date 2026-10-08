@@ -9,6 +9,8 @@ function escapeHtml(value) {
 class PlayerApp {
   constructor() {
     this.ws = null;
+    this.showingWinningTeamMVPs = false;
+    this.latestState = null;
     this.reconnectTimer = null;
     this.connectTimeout = null;
     this.reconnectAttempts = 0;
@@ -136,6 +138,17 @@ class PlayerApp {
       });
     });
 
+    // Toggle Leaderboard Button
+    const btnToggleLeaderboard = document.getElementById('btn-toggle-leaderboard');
+    if (btnToggleLeaderboard) {
+      btnToggleLeaderboard.addEventListener('click', () => {
+        this.showingWinningTeamMVPs = !this.showingWinningTeamMVPs;
+        if (this.latestState) {
+          this.renderStage(this.latestState.stage, this.latestState);
+        }
+      });
+    }
+
   }
 
   connectWebSocket() {
@@ -188,6 +201,8 @@ class PlayerApp {
       }
       if (this.ws !== ws) return;
       this.ws = null;
+    this.showingWinningTeamMVPs = false;
+    this.latestState = null;
       const connStatus = document.getElementById('conn-status');
       if (connStatus) {
         connStatus.textContent = '⚠️ RECONNECTING TO LIVE GAME...';
@@ -738,8 +753,22 @@ class PlayerApp {
 
         // Populate Top 5 MVPs Leaderboard Table with Accuracy (Correct Count) & Score
         const top5List = document.getElementById('top5-list-mvp');
-        if (top5List && state.topContributors && state.winnerTeam) {
-          const mvps = state.topContributors[state.winnerTeam] || [];
+        const btnToggleLeaderboard = document.getElementById('btn-toggle-leaderboard');
+        const leaderboardTitle = document.getElementById('leaderboard-title');
+
+        if (top5List && state.topContributors) {
+          if (btnToggleLeaderboard) btnToggleLeaderboard.style.display = 'inline-block';
+          
+          let targetTeam = this.showingWinningTeamMVPs ? state.winnerTeam : this.player.teamId;
+          
+          if (leaderboardTitle) {
+            leaderboardTitle.textContent = this.showingWinningTeamMVPs ? "WINNING TEAM'S TOP WEB-HEADS" : "YOUR TEAM'S TOP WEB-HEADS";
+          }
+          if (btnToggleLeaderboard) {
+            btnToggleLeaderboard.textContent = this.showingWinningTeamMVPs ? 'VIEW YOUR TEAM' : 'VIEW WINNING TEAM';
+          }
+
+          const mvps = (state.topContributors[targetTeam] || []).slice(0, 5);
           top5List.innerHTML = mvps.map((mvp, idx) => {
             const isMe = mvp.id === this.player.id;
             const rankIcon = idx === 0 ? '1ST' : `#${idx + 1}`;
@@ -768,3 +797,9 @@ class PlayerApp {
 window.addEventListener('DOMContentLoaded', () => {
   new PlayerApp();
 });
+
+
+
+
+
+
