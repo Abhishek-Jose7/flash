@@ -109,3 +109,22 @@ test('Rejects malformed answers and non-string nicknames', () => {
     assert.equal(engine.submitAnswer(p.id, q.id, bad).reason, 'INVALID_OPTION');
   }
 });
+
+test('Demo players inflate counts and scores but never unlock tiers or reach the leaderboard', () => {
+  const engine = new GameStateEngine();
+  const real = engine.registerPlayer('real_1', 'Real');
+  engine.addDemoPlayers(40);
+  assert.equal(engine.players.size, 41);
+  assert.equal(engine.teams.bit.playerCount + engine.teams.build.playerCount, 41, 'Demo players fill teams');
+
+  engine.activateQuestion(0);
+  engine.revealAnswer();
+  assert.equal(engine.submissions.size, 40, 'Every demo player answered');
+  assert.equal(engine.teams.bit.unlockedTiers.size + engine.teams.build.unlockedTiers.size, 0, 'Demo answers never unlock tiers');
+  assert.equal(engine.teams.bit.score + engine.teams.build.score, 0, 'Demo points stay out of the tie-break score');
+  assert.ok(engine.teams.bit.correctCount + engine.teams.build.correctCount > 0, 'Demo correct answers show on the team totals');
+  for (const t of ['bit', 'build']) {
+    assert.ok(engine.getTopContributors(t).every(p => !p.id.startsWith('demo_')), 'No demo player in the top 5');
+  }
+  assert.ok(real);
+});

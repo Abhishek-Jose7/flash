@@ -15,6 +15,8 @@ export class GameStateEngine {
     this.revealDurationSec = 2;
     this.countdownSeconds = 10;
     this.winnerTeam = null;
+    this.demoSeq = 0;
+    this.demoCount = 0; // server-side demo players (no sockets): inflate counts/scores for showcases
 
     // Two Teams: Team Bit red and Team Build blue.
     this.teams = {
@@ -162,51 +164,9 @@ export class GameStateEngine {
       return { success: false, reason: 'ALREADY_SUBMITTED', submission: this.submissions.get(subKey) };
     }
 
-    const now = Date.now();
-    const timeElapsedMs = Math.max(0, now - this.questionStartTime);
-    if (timeElapsedMs >= this.questionDurationSec * 1000) {
-      return { success: false, reason: 'TIME_EXPIRED' };
-    }
-
-    const isCorrect = optionIndex === currentQ.correctIndex;
-
-    // Score calculation: Kahoot-style speed bonus
-    let points = 0;
-    if (isCorrect) {
-      const maxPoints = 1000;
-      const speedDeduction = Math.floor(timeElapsedMs * 0.05);
-      points = Math.max(200, maxPoints - speedDeduction);
-    }
-
-    const submission = {
-      playerId,
-      teamId: player.teamId,
-      questionId,
-      optionIndex,
-      isCorrect,
-      points,
-      timeElapsedMs,
-      timestamp: now
-    };
-
-    this.submissions.set(subKey, submission);
-
-    // Atomic updates to player
-    player.totalAnswered++;
-    player.totalResponseTimeMs += timeElapsedMs;
-    if (isCorrect) {
-      player.correctCount++;
-      player.score += points;
-
-      // Atomic updates to team
-      const team = this.teams[player.teamId];
-      team.score += points;
-      team.correctCount++;
-
-      // Unlock tier for team
-      this.unlockTeamTier(player.teamId, currentQ.id);
-    }
-
+    const timeElapsedMs = Math.max(0, Date.now() - this.questionStartTime);
+    const { isCorrect, points } = this._recordAnswer(player, currentQ, optionIndex, timeElapsedMs);
+    if (isCorrect) this.unlockTeamTier(player.teamId, currentQ.id);
     this._bumpVersion();
 
     return {
@@ -217,6 +177,54 @@ export class GameStateEngine {
       playerScore: player.score,
       teamId: player.teamId
     };
+  }
+
+  // Shared by real and demo answers: score (Kahoot-style speed bonus), store, update player + team.
+  _recordAnswer(player, q, optionIndex, timeElapsedMs) {
+    const isCorrect = optionIndex === q.correctIndex;
+    const points = isCorrect ? Math.max(200, 1000 - Math.floor(timeElapsedMs * 0.05)) : 0;
+    const submission = {
+      playerId: player.id,
+      teamId: player.teamId,
+      questionId: q.id,
+      optionIndex,
+      isCorrect,
+      points,
+      timeElapsedMs,
+      timestamp: Date.now()
+    };
+    this.submissions.set(`${player.id}:${q.id}`, submission);
+
+    player.totalAnswered++;
+    player.totalResponseTimeMs += timeElapsedMs;
+    if (isCorrect) {
+      player.correctCount++;
+      player.score += points;
+      const team = this.teams[player.teamId];
+      team.correctCount++;
+      if (!player.demo) team.score += points; // team.score breaks victory ties: demo players must not sway it
+    }
+    return submission;
+  }
+
+  addDemoPlayers(n) {
+    for (let i = 0; i < n; i++) {
+      this.registerPlayer(`demo_${this.demoSeq++}`).demo = true;
+      this.demoCount++;
+    }
+  }
+
+  // Demo players "answer" when the question closes: ~55% accurate, 2-12s in, so real players can beat them.
+  // They never unlock tiers, so they can't decide which team wins.
+  _simulateDemoAnswers() {
+    const q = this.getCurrentQuestion();
+    if (!q || !this.demoCount) return;
+    for (const p of this.players.values()) {
+      if (!p.demo || this.submissions.has(`${p.id}:${q.id}`)) continue;
+      const right = Math.random() < 0.55;
+      const opt = right ? q.correctIndex : (q.correctIndex + 1 + Math.floor(Math.random() * (q.options.length - 1))) % q.options.length;
+      this._recordAnswer(p, q, opt, 2000 + Math.random() * 10000);
+    }
   }
 
   unlockTeamTier(teamId, tierIndex) {
@@ -236,6 +244,7 @@ export class GameStateEngine {
 
   revealAnswer() {
     if (this.stage === 'VICTORY') return;
+    if (this.stage === 'QUESTION_ACTIVE') this._simulateDemoAnswers();
     this.stage = 'QUESTION_REVEAL';
     this.revealStartTime = Date.now();
     this._bumpVersion();
@@ -274,7 +283,7 @@ export class GameStateEngine {
   getTopContributors(teamId, limit = 5) {
     const teamPlayers = [];
     for (const p of this.players.values()) {
-      if (p.teamId === teamId) {
+      if (p.teamId === teamId && !p.demo) {
         teamPlayers.push({
           id: p.id,
           nickname: p.nickname,

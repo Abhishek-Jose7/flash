@@ -24,6 +24,7 @@ gcloud run deploy bitnbuild --source . --region <region> --allow-unauthenticated
 * Cloud Run terminates TLS, honours `PORT`, and sends `SIGTERM` on deploy (handled: clients are told to reconnect).
 * Deploying mid-event resets the game. Deploy before doors open.
 * Load-test first: `CLIENTS=500 npm run test:load`.
+* Showcase mode: add `DEMO_PLAYERS=150` to `--set-env-vars` for server-side demo players (30 at start, +10 every 20s, restarts on Reset Game). They have no connections, so no load, and `/health` reports them as `demoPlayers`.
 
 ---
 

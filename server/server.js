@@ -21,6 +21,7 @@ if (!ADMIN_PASSKEY) {
 const MAX_CONNECTIONS = Number.parseInt(process.env.MAX_CONNECTIONS || '1000', 10);
 const MAX_PLAYERS = Number.parseInt(process.env.MAX_PLAYERS || '1000', 10);
 const MAX_BUFFERED_BYTES = 256 * 1024;
+const DEMO_PLAYERS = Number.parseInt(process.env.DEMO_PLAYERS || '0', 10); // 0 = off
 const PUBLIC_URL = process.env.PUBLIC_URL; // optional canonical URL for the QR code (else derived from Host)
 
 // Constant-time compare so the admin key can't be recovered by timing.
@@ -113,6 +114,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     connections: clients.size,
     players: engine.players.size,
+    demoPlayers: engine.demoCount,
     stage: engine.stage,
     uptimeSec: Math.floor(process.uptime()),
     memoryMb: Math.round(process.memoryUsage().rss / 1024 / 1024)
@@ -224,6 +226,20 @@ function startTicker() {
 }
 startTicker();
 
+// Showcase mode: start at 30 demo players, +10 every 20s up to DEMO_PLAYERS. Restarts on RESET_GAME.
+let demoTimer = null;
+function startDemoRamp() {
+  clearInterval(demoTimer);
+  if (DEMO_PLAYERS <= 0) return;
+  engine.addDemoPlayers(Math.min(30, DEMO_PLAYERS));
+  demoTimer = setInterval(() => {
+    engine.addDemoPlayers(Math.min(10, DEMO_PLAYERS - engine.demoCount));
+    requestBroadcast();
+    if (engine.demoCount >= DEMO_PLAYERS) clearInterval(demoTimer);
+  }, 20000).unref();
+}
+startDemoRamp();
+
 // --- WebSocket Event Handling ---
 wss.on('connection', (ws, req) => {
   const ip = clientIp(req);
@@ -266,7 +282,7 @@ wss.on('connection', (ws, req) => {
         case 'JOIN': {
           const { playerId, nickname } = msg;
           // Bounded id, one identity per socket, capped roster: stops memory-stuffing via fake joins.
-          if (typeof playerId !== 'string' || !playerId || playerId.length > 64) return;
+          if (typeof playerId !== 'string' || !playerId || playerId.length > 64 || playerId.startsWith('demo_')) return;
           if (clientMeta.playerId && clientMeta.playerId !== playerId) return;
           if (!engine.players.has(playerId) && engine.players.size >= MAX_PLAYERS) {
             safeSend(ws, JSON.stringify({ type: 'ERROR', code: 'GAME_FULL' }));
@@ -360,6 +376,7 @@ function handleAdminAction(action, payload, adminWs) {
 
     case 'RESET_GAME':
       engine.reset();
+      startDemoRamp();
       // Reset broadcast cache on game reset
       lastPlayerJson = '';
       break;
