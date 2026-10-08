@@ -9,6 +9,9 @@ function escapeHtml(value) {
 class PlayerApp {
   constructor() {
     this.ws = null;
+    this.reconnectTimer = null;
+    this.connectTimeout = null;
+    this.reconnectAttempts = 0;
     this.playerId = this.getOrCreatePlayerId();
     this.nickname = localStorage.getItem('spider_nick') || '';
     this.player = null;
@@ -136,12 +139,27 @@ class PlayerApp {
   }
 
   connectWebSocket() {
+    if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) return;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}`;
 
-    this.ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl);
+    this.ws = ws;
 
-    this.ws.onopen = () => {
+    this.connectTimeout = setTimeout(() => {
+      if (this.ws === ws && ws.readyState === WebSocket.CONNECTING) ws.close();
+    }, 10000);
+
+    ws.onopen = () => {
+      if (this.ws !== ws) return;
+      clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+      this.reconnectAttempts = 0;
       const connStatus = document.getElementById('conn-status');
       if (connStatus) {
         connStatus.textContent = '⚡ CONNECTED TO LIVE GAME';
@@ -153,7 +171,8 @@ class PlayerApp {
       if (this.nickname) this.sendJoin();
     };
 
-    this.ws.onmessage = (event) => {
+    ws.onmessage = (event) => {
+      if (this.ws !== ws) return;
       try {
         const msg = JSON.parse(event.data);
         this.handleMessage(msg);
@@ -162,7 +181,13 @@ class PlayerApp {
       }
     };
 
-    this.ws.onclose = () => {
+    ws.onclose = () => {
+      if (this.connectTimeout) {
+        clearTimeout(this.connectTimeout);
+        this.connectTimeout = null;
+      }
+      if (this.ws !== ws) return;
+      this.ws = null;
       const connStatus = document.getElementById('conn-status');
       if (connStatus) {
         connStatus.textContent = '⚠️ RECONNECTING TO LIVE GAME...';
@@ -170,12 +195,24 @@ class PlayerApp {
       }
       const topConn = document.getElementById('top-conn-status');
       if (topConn) { topConn.textContent = '[OFFLINE]'; topConn.style.color = '#fa5252'; }
-      setTimeout(() => this.connectWebSocket(), 1000 + Math.random() * 4000);
+      this.scheduleReconnect();
     };
 
     this.ws.onerror = (err) => {
       console.warn('WS error:', err);
+      if (this.ws === ws && ws.readyState !== WebSocket.CLOSING && ws.readyState !== WebSocket.CLOSED) ws.close();
     };
+  }
+
+  scheduleReconnect() {
+    if (this.reconnectTimer) return;
+    const baseDelay = Math.min(30000, 1000 * (2 ** this.reconnectAttempts));
+    const delay = Math.round(baseDelay * (0.75 + Math.random() * 0.5));
+    this.reconnectAttempts++;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connectWebSocket();
+    }, delay);
   }
 
   sendJoin() {
@@ -276,6 +313,19 @@ class PlayerApp {
   handleAnswerResult(result) {
     if (!result) return;
     if (!result.success) {
+      if (result.reason === 'TIME_EXPIRED') {
+        this.hasAnswered = true;
+        this.selectedOption = null;
+        document.querySelectorAll('.mcq-btn').forEach(btn => {
+          btn.classList.remove('selected-pending', 'selected-accepted', 'reveal-correct', 'reveal-wrong');
+          btn.classList.add('dimmed');
+          btn.style.pointerEvents = 'none';
+        });
+        const answerStatus = document.getElementById('answer-status');
+        if (answerStatus) answerStatus.textContent = 'TIME UP · ANSWER WINDOW CLOSED';
+        return;
+      }
+
       this.hasAnswered = false;
       this.selectedOption = null;
       document.querySelectorAll('.mcq-btn').forEach(btn => btn.classList.remove('selected-pending', 'selected-accepted', 'reveal-correct', 'reveal-wrong', 'dimmed'));
@@ -556,13 +606,23 @@ class PlayerApp {
           if (answerStatus) {
             if (state.playerAnswer) {
               answerStatus.textContent = state.playerAnswer.isCorrect ? 'CORRECT!' : 'INCORRECT!';
+            } else if (state.remainingSec <= 0) {
+              answerStatus.textContent = 'TIME UP · ANSWER WINDOW CLOSED';
             } else {
               answerStatus.textContent = this.hasAnswered ? '...' : 'CHOOSE AN ANSWER';
             }
           }
 
           // Re-highlight if reconnecting
-          if (state.playerAnswer) {
+          if (state.remainingSec <= 0) {
+            this.hasAnswered = true;
+            this.selectedOption = null;
+            btns.forEach(btn => {
+              btn.classList.remove('selected-pending', 'selected-accepted', 'reveal-correct', 'reveal-wrong');
+              btn.classList.add('dimmed');
+              btn.style.pointerEvents = 'none';
+            });
+          } else if (state.playerAnswer) {
             this.hasAnswered = true;
             const chosen = state.playerAnswer.optionIndex;
             this.selectedOption = chosen;

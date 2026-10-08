@@ -1,6 +1,9 @@
 class AdminApp {
   constructor() {
     this.ws = null;
+    this.reconnectTimer = null;
+    this.connectTimeout = null;
+    this.reconnectAttempts = 0;
     this.adminToken = localStorage.getItem('spider_admin_token') || null;
     this.state = null;
 
@@ -114,13 +117,27 @@ class AdminApp {
 
   connectWebSocket() {
     if (!this.adminToken) return;
+    if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) return;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}`;
 
-    this.ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl);
+    this.ws = ws;
 
-    this.ws.onopen = () => {
+    this.connectTimeout = setTimeout(() => {
+      if (this.ws === ws && ws.readyState === WebSocket.CONNECTING) ws.close();
+    }, 10000);
+
+    ws.onopen = () => {
+      if (this.ws !== ws) return;
+      clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+      this.reconnectAttempts = 0;
       const connStatus = document.getElementById('admin-conn-status');
       if (connStatus) {
         connStatus.textContent = 'ONLINE';
@@ -130,7 +147,8 @@ class AdminApp {
       this.sendAction('AUTH');
     };
 
-    this.ws.onmessage = (event) => {
+    ws.onmessage = (event) => {
+      if (this.ws !== ws) return;
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'INIT' || msg.type === 'STATE_UPDATE') {
@@ -141,6 +159,7 @@ class AdminApp {
             this.adminToken = null;
             localStorage.removeItem('spider_admin_token');
             this.showLogin();
+            if (this.ws === ws) ws.close();
           } else {
             console.warn('Admin error received:', msg.code);
           }
@@ -150,16 +169,36 @@ class AdminApp {
       }
     };
 
-    this.ws.onclose = () => {
+    ws.onclose = () => {
+      if (this.connectTimeout) {
+        clearTimeout(this.connectTimeout);
+        this.connectTimeout = null;
+      }
+      if (this.ws !== ws) return;
+      this.ws = null;
       const connStatus = document.getElementById('admin-conn-status');
       if (connStatus) {
         connStatus.textContent = 'RECONNECTING...';
         connStatus.style.color = 'var(--blush)';
       }
-      if (this.adminToken) {
-        setTimeout(() => this.connectWebSocket(), 1000 + Math.random() * 4000);
-      }
+      this.scheduleReconnect();
     };
+
+    ws.onerror = (err) => {
+      console.warn('Admin WS error:', err);
+      if (this.ws === ws && ws.readyState !== WebSocket.CLOSING && ws.readyState !== WebSocket.CLOSED) ws.close();
+    };
+  }
+
+  scheduleReconnect() {
+    if (!this.adminToken || this.reconnectTimer) return;
+    const baseDelay = Math.min(30000, 1000 * (2 ** this.reconnectAttempts));
+    const delay = Math.round(baseDelay * (0.75 + Math.random() * 0.5));
+    this.reconnectAttempts++;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connectWebSocket();
+    }, delay);
   }
 
   sendAction(action, payload = null) {

@@ -164,6 +164,10 @@ export class GameStateEngine {
 
     const now = Date.now();
     const timeElapsedMs = Math.max(0, now - this.questionStartTime);
+    if (timeElapsedMs >= this.questionDurationSec * 1000) {
+      return { success: false, reason: 'TIME_EXPIRED' };
+    }
+
     const isCorrect = optionIndex === currentQ.correctIndex;
 
     // Score calculation: Kahoot-style speed bonus
